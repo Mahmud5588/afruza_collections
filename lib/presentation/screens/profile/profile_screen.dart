@@ -103,19 +103,67 @@ class ProfileScreen extends StatelessWidget {
   }
 
   Future<void> _logout(BuildContext context) async {
+    final t = AppLocalizations.of(context).t;
+
+    // Logout tasdiqlovchi dialog chiqarish
+    final confirmed = await showDialog<bool>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(t("confirm_logout")),
+            content: Text(t("logout_message")),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context, false),
+                child: Text(t("cancel")),
+              ),
+              FilledButton(
+                onPressed: () => Navigator.pop(context, true),
+                child: Text(t("logout")),
+              ),
+            ],
+          ),
+        ) ??
+        false;
+
+    if (!confirmed) return;
+
+    if (!context.mounted) return;
     await sl<LogoutUser>()();
     if (!context.mounted) return;
     Navigator.pushNamedAndRemoveUntil(context, "/login", (_) => false);
   }
 
   Future<void> _openIfLoggedIn(BuildContext context, String route) async {
+    final t = AppLocalizations.of(context).t;
     final storage = sl<StorageService>();
     final isLoggedIn = await storage.isTokenValid(const Duration(days: 30));
     if (!context.mounted) return;
+
     if (!isLoggedIn) {
-      Navigator.pushNamed(context, "/login");
+      // Login talab qiluvchi dialog chiqarish
+      await showDialog<void>(
+        context: context,
+        builder: (context) => AlertDialog(
+          title: Text(t("login_required")),
+          content: Text(t("login_required_message")),
+          actions: [
+            TextButton(
+              onPressed: () => Navigator.pop(context),
+              child: Text(t("cancel")),
+            ),
+            FilledButton(
+              onPressed: () {
+                Navigator.pop(context);
+                Navigator.pushNamed(context, "/login");
+              },
+              child: Text(t("login")),
+            ),
+          ],
+        ),
+      );
       return;
     }
+
     Navigator.pushNamed(context, route);
   }
 

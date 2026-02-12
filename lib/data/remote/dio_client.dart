@@ -7,8 +7,15 @@ Dio buildDioClient(StorageService storage) {
   final dio = Dio(
     BaseOptions(
       baseUrl: AppConfig.apiBaseUrl,
-      connectTimeout: const Duration(seconds: 12),
-      receiveTimeout: const Duration(seconds: 12),
+      // Slow internet optimization: longer timeouts
+      connectTimeout: const Duration(seconds: 30),
+      receiveTimeout: const Duration(seconds: 60),
+      sendTimeout: const Duration(seconds: 60),
+      // Compression support for smaller payloads
+      headers: {
+        "Accept-Encoding": "gzip, deflate",
+        "Content-Type": "application/json",
+      },
     ),
   );
 
@@ -20,6 +27,14 @@ Dio buildDioClient(StorageService storage) {
           options.headers["Authorization"] = "Bearer $token";
         }
         handler.next(options);
+      },
+      onError: (error, handler) async {
+        // Handle timeout and retry for slow networks
+        if (error.type == DioExceptionType.connectionTimeout ||
+            error.type == DioExceptionType.receiveTimeout) {
+          print("Network timeout - retry available");
+        }
+        handler.next(error);
       },
     ),
   );

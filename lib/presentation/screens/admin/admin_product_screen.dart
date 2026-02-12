@@ -9,6 +9,7 @@ import "../../blocs/auth/admin/admin_product_bloc.dart";
 import "../../blocs/category/category_bloc.dart";
 import "../../widgets/empty_state.dart";
 import "../../widgets/skeleton_box.dart";
+import "../../widgets/image_picker_field.dart";
 
 class AdminProductScreen extends StatefulWidget {
   const AdminProductScreen({super.key});
@@ -25,8 +26,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   final _descriptionController = TextEditingController();
   final _priceController = TextEditingController();
   final _ratingController = TextEditingController(text: "0");
-  final _imagesController = TextEditingController();
   final _variantsController = TextEditingController();
+  final List<String> _selectedImages = [];
   Category? _selectedCategory;
 
   @override
@@ -44,7 +45,6 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _descriptionController.dispose();
     _priceController.dispose();
     _ratingController.dispose();
-    _imagesController.dispose();
     _variantsController.dispose();
     _productBloc.close();
     _categoryBloc.close();
@@ -198,10 +198,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             },
           ),
           const SizedBox(height: 12),
-          TextField(
-            controller: _imagesController,
-            decoration:
-                const InputDecoration(hintText: "Image URLs (comma separated)"),
+          ImagePickerField(
+            initialImages: const [],
+            onImagesSelected: (images) {
+              _selectedImages.clear();
+              _selectedImages.addAll(images);
+            },
+            maxImages: 5,
           ),
           const SizedBox(height: 12),
           TextField(
@@ -233,18 +236,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     if (name.isEmpty ||
         description.isEmpty ||
         price == null ||
-        category == null) {
+        category == null ||
+        _selectedImages.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Fill all required fields")),
+        const SnackBar(
+            content: Text("Fill all required fields including images")),
       );
       return;
     }
-
-    final images = _imagesController.text
-        .split(",")
-        .map((value) => value.trim())
-        .where((value) => value.isNotEmpty)
-        .toList();
 
     final variants = _parseVariants(_variantsController.text);
 
@@ -255,7 +254,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
             price: price,
             rating: rating,
             categoryId: category.id,
-            images: images,
+            images: _selectedImages,
             variants: variants,
           ),
         );
@@ -264,8 +263,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _descriptionController.clear();
     _priceController.clear();
     _ratingController.text = "0";
-    _imagesController.clear();
     _variantsController.clear();
+    _selectedImages.clear();
+    setState(() {});
   }
 
   Future<void> _showEditSheet(BuildContext context, Product product) async {
@@ -276,10 +276,9 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         TextEditingController(text: product.price.toString());
     final ratingController =
         TextEditingController(text: product.rating.toString());
-    final imagesController =
-        TextEditingController(text: product.imageUrls.join(", "));
     final variantsController =
         TextEditingController(text: _formatVariants(product.variants));
+    final List<String> editImages = List.from(product.imageUrls);
 
     Category? selectedCategory;
 
@@ -352,10 +351,15 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                         decoration: const InputDecoration(hintText: "Category"),
                       ),
                       const SizedBox(height: 12),
-                      TextField(
-                        controller: imagesController,
-                        decoration: const InputDecoration(
-                            hintText: "Image URLs (comma separated)"),
+                      ImagePickerField(
+                        initialImages: editImages,
+                        onImagesSelected: (images) {
+                          setModalState(() {
+                            editImages.clear();
+                            editImages.addAll(images);
+                          });
+                        },
+                        maxImages: 5,
                       ),
                       const SizedBox(height: 12),
                       TextField(
@@ -382,7 +386,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                               priceController.text.trim(),
                               ratingController.text.trim(),
                               selectedCategory,
-                              imagesController.text,
+                              editImages,
                               variantsController.text,
                             ),
                             child: const Text("Save"),
@@ -409,7 +413,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     String priceText,
     String ratingText,
     Category? category,
-    String imagesText,
+    List<String> images,
     String variantsText,
   ) {
     final price = double.tryParse(priceText);
@@ -417,18 +421,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     if (name.isEmpty ||
         description.isEmpty ||
         price == null ||
-        category == null) {
+        category == null ||
+        images.isEmpty) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(content: Text("Fill all required fields")),
+        const SnackBar(
+            content: Text("Fill all required fields including images")),
       );
       return;
     }
-
-    final images = imagesText
-        .split(",")
-        .map((value) => value.trim())
-        .where((value) => value.isNotEmpty)
-        .toList();
 
     final variants = _parseVariants(variantsText);
 

@@ -61,114 +61,197 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                   ],
                 ),
               ),
-              Hero(
-                tag: heroTag ?? "product-${product.id}",
-                child: ClipRRect(
-                  borderRadius: BorderRadius.circular(28),
-                  child: ColoredBox(
-                    color: Theme.of(context).colorScheme.surface,
-                    child: CachedNetworkImage(
-                      imageUrl: product.imageUrls.isNotEmpty
-                          ? product.imageUrls.first
-                          : "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
-                      height: 300,
-                      width: double.infinity,
-                      fit: BoxFit.contain,
-                      placeholder: (context, url) => const Center(
-                        child: SizedBox(
-                          width: 22,
-                          height: 22,
-                          child: CircularProgressIndicator(strokeWidth: 2),
-                        ),
-                      ),
-                      errorWidget: (context, url, error) => const Center(
-                        child: Icon(Icons.broken_image_outlined, size: 32),
-                      ),
-                    ),
-                  ),
-                ),
-              ),
-              const SizedBox(height: AppSpacing.lg),
-              Expanded(
-                child: Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.fromLTRB(28, 28, 28, 20),
-                  decoration: const BoxDecoration(
-                    color: Color(0xFFFDFBF7),
-                    borderRadius:
-                        BorderRadius.vertical(top: Radius.circular(32)),
-                  ),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(product.name,
-                          style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 6),
-                      Text(
-                        product.categoryName,
-                        style: Theme.of(context).textTheme.bodyMedium?.copyWith(
-                              color: Theme.of(context)
-                                  .colorScheme
-                                  .onSurface
-                                  .withOpacity(0.6),
-                            ),
-                      ),
-                      const SizedBox(height: 16),
-                      Text(product.description,
-                          style: Theme.of(context).textTheme.bodyLarge),
-                      const SizedBox(height: 16),
-                      if (product.variants.isNotEmpty)
-                        _VariantSelector(
-                          variants: product.variants,
-                          selected: _selectedVariant,
-                          onChanged: (value) =>
-                              setState(() => _selectedVariant = value),
-                        ),
-                      if (product.variants.isNotEmpty)
-                        const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                        children: [
-                          Text(
-                            formatter.format(selectedPrice),
-                            style: Theme.of(context)
-                                .textTheme
-                                .titleLarge
-                                ?.copyWith(
-                                  color:
-                                      Theme.of(context).colorScheme.secondary,
+              // Image carousel with multiple images support
+              SizedBox(
+                height: 280,
+                child: product.imageUrls.isNotEmpty &&
+                        product.imageUrls.length > 1
+                    ? PageView.builder(
+                        itemCount: product.imageUrls.length,
+                        itemBuilder: (context, index) {
+                          return Hero(
+                            tag: (heroTag ?? "product-${product.id}") +
+                                "-$index",
+                            child: ClipRRect(
+                              borderRadius: BorderRadius.circular(28),
+                              child: ColoredBox(
+                                color: Theme.of(context).colorScheme.surface,
+                                child: CachedNetworkImage(
+                                  imageUrl: product.imageUrls[index],
+                                  width: double.infinity,
+                                  fit: BoxFit.cover,
+                                  placeholder: (context, url) => const Center(
+                                    child: SizedBox(
+                                      width: 24,
+                                      height: 24,
+                                      child: CircularProgressIndicator(
+                                          strokeWidth: 2),
+                                    ),
+                                  ),
+                                  errorWidget: (context, url, error) =>
+                                      const Center(
+                                    child: Icon(Icons.broken_image_outlined,
+                                        size: 40),
+                                  ),
                                 ),
-                          ),
-                          _QuantitySelector(
-                            quantity: quantity,
-                            onChanged: (value) =>
-                                setState(() => quantity = value),
-                          ),
-                        ],
-                      ),
-                      const Spacer(),
-                      SizedBox(
-                        width: double.infinity,
-                        child: FilledButton(
-                          onPressed: _isSubmitting
-                              ? null
-                              : () => _placeOrder(context, product),
-                          style: FilledButton.styleFrom(
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(16)),
-                          ),
-                          child: _isSubmitting
-                              ? const SizedBox(
-                                  width: 18,
-                                  height: 18,
+                              ),
+                            ),
+                          );
+                        },
+                      )
+                    : Hero(
+                        tag: heroTag ?? "product-${product.id}",
+                        child: ClipRRect(
+                          borderRadius: BorderRadius.circular(28),
+                          child: ColoredBox(
+                            color: Theme.of(context).colorScheme.surface,
+                            child: CachedNetworkImage(
+                              imageUrl: product.imageUrls.isNotEmpty
+                                  ? product.imageUrls.first
+                                  : "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
+                              width: double.infinity,
+                              fit: BoxFit.cover,
+                              placeholder: (context, url) => const Center(
+                                child: SizedBox(
+                                  width: 24,
+                                  height: 24,
                                   child:
                                       CircularProgressIndicator(strokeWidth: 2),
-                                )
-                              : Text(t("order_now")),
+                                ),
+                              ),
+                              errorWidget: (context, url, error) =>
+                                  const Center(
+                                child:
+                                    Icon(Icons.broken_image_outlined, size: 40),
+                              ),
+                            ),
+                          ),
                         ),
                       ),
-                    ],
+              ),
+              const SizedBox(height: AppSpacing.md),
+              Expanded(
+                child: SingleChildScrollView(
+                  child: Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.fromLTRB(28, 16, 28, 20),
+                    decoration: const BoxDecoration(
+                      color: Color(0xFFFDFBF7),
+                      borderRadius:
+                          BorderRadius.vertical(top: Radius.circular(32)),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(product.name,
+                            style: Theme.of(context).textTheme.titleLarge),
+                        const SizedBox(height: 6),
+                        Text(
+                          product.categoryName,
+                          style:
+                              Theme.of(context).textTheme.bodyMedium?.copyWith(
+                                    color: Theme.of(context)
+                                        .colorScheme
+                                        .onSurface
+                                        .withOpacity(0.6),
+                                  ),
+                        ),
+                        const SizedBox(height: 16),
+                        // Rating display
+                        Row(
+                          children: [
+                            Icon(Icons.star,
+                                color: Theme.of(context).colorScheme.secondary,
+                                size: 18),
+                            const SizedBox(width: 6),
+                            Text(
+                              product.rating.toStringAsFixed(1),
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .bodyMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 16),
+                        Text(product.description,
+                            style: Theme.of(context).textTheme.bodyLarge),
+                        const SizedBox(height: 20),
+                        if (product.variants.isNotEmpty)
+                          _VariantSelector(
+                            variants: product.variants,
+                            selected: _selectedVariant,
+                            onChanged: (value) =>
+                                setState(() => _selectedVariant = value),
+                          ),
+                        if (product.variants.isNotEmpty)
+                          const SizedBox(height: 20),
+                        Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  t("price"),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyMedium
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .onSurface
+                                            .withOpacity(0.6),
+                                      ),
+                                ),
+                                const SizedBox(height: 4),
+                                Text(
+                                  formatter.format(selectedPrice),
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .titleLarge
+                                      ?.copyWith(
+                                        color: Theme.of(context)
+                                            .colorScheme
+                                            .secondary,
+                                      ),
+                                ),
+                              ],
+                            ),
+                            _QuantitySelector(
+                              quantity: quantity,
+                              onChanged: (value) =>
+                                  setState(() => quantity = value),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 24),
+                        SizedBox(
+                          width: double.infinity,
+                          child: FilledButton(
+                            onPressed: _isSubmitting
+                                ? null
+                                : () => _placeOrder(context, product),
+                            style: FilledButton.styleFrom(
+                              padding: const EdgeInsets.symmetric(vertical: 16),
+                              shape: RoundedRectangleBorder(
+                                  borderRadius: BorderRadius.circular(16)),
+                            ),
+                            child: _isSubmitting
+                                ? const SizedBox(
+                                    width: 18,
+                                    height: 18,
+                                    child: CircularProgressIndicator(
+                                        strokeWidth: 2),
+                                  )
+                                : Text(t("order_now")),
+                          ),
+                        ),
+                        const SizedBox(height: 16),
+                      ],
+                    ),
                   ),
                 ),
               ),

@@ -8,8 +8,12 @@ class ProductModel {
     required this.price,
     required this.rating,
     required this.categoryName,
+    this.categoryId,
     required this.imageUrls,
     required this.variants,
+    this.viewsCount = 0,
+    this.soldCount = 0,
+    this.createdAt,
   });
 
   final int id;
@@ -18,8 +22,12 @@ class ProductModel {
   final double price;
   final double rating;
   final String categoryName;
+  final int? categoryId;
   final List<String> imageUrls;
   final List<ProductVariantModel> variants;
+  final int viewsCount;
+  final int soldCount;
+  final DateTime? createdAt;
 
   factory ProductModel.fromJson(Map<String, dynamic> json) {
     final category = json["category"] as Map<String, dynamic>? ?? {};
@@ -28,9 +36,19 @@ class ProductModel {
         .map((item) => item["url"] as String)
         .toList();
     final variantsJson = (json["variants"] as List<dynamic>? ?? [])
-      .whereType<Map<String, dynamic>>()
-      .map(ProductVariantModel.fromJson)
-      .toList();
+        .whereType<Map<String, dynamic>>()
+        .map(ProductVariantModel.fromJson)
+        .toList();
+
+    DateTime? createdAt;
+    try {
+      final createdAtStr = json["created_at"] as String?;
+      if (createdAtStr != null) {
+        createdAt = DateTime.parse(createdAtStr);
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
 
     return ProductModel(
       id: json["id"] as int,
@@ -39,8 +57,12 @@ class ProductModel {
       price: (json["price"] as num).toDouble(),
       rating: (json["rating"] as num?)?.toDouble() ?? 0,
       categoryName: category["name"] as String? ?? "Uncategorized",
+      categoryId: category["id"] as int?,
       imageUrls: images,
       variants: variantsJson,
+      viewsCount: json["views_count"] as int? ?? 0,
+      soldCount: json["sold_count"] as int? ?? 0,
+      createdAt: createdAt,
     );
   }
 
@@ -52,8 +74,12 @@ class ProductModel {
       price: price,
       rating: rating,
       categoryName: categoryName,
+      categoryId: categoryId,
       imageUrls: imageUrls,
       variants: variants.map((variant) => variant.toEntity()).toList(),
+      viewsCount: viewsCount,
+      soldCount: soldCount,
+      createdAt: createdAt,
     );
   }
 }

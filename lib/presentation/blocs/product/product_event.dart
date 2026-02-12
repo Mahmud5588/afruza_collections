@@ -27,9 +27,14 @@ class LoadProducts extends ProductEvent {
   final int? limit;
 
   @override
-  List<Object?> get props => [query, categoryId, minPrice, maxPrice, skip, limit];
+  List<Object?> get props =>
+      [query, categoryId, minPrice, maxPrice, skip, limit];
 }
 
 class LoadMoreProducts extends ProductEvent {
   const LoadMoreProducts();
+}
+
+class RetryLoadProducts extends ProductEvent {
+  const RetryLoadProducts();
 }

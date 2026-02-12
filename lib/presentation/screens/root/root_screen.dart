@@ -68,7 +68,29 @@ class _RootScreenState extends State<RootScreen> {
       final isLoggedIn = await storage.isTokenValid(const Duration(days: 30));
       if (!isLoggedIn) {
         if (!context.mounted) return;
-        Navigator.pushNamed(context, "/login");
+
+        final t = AppLocalizations.of(context).t;
+        // Login talab qiluvchi dialog chiqarish
+        await showDialog<void>(
+          context: context,
+          builder: (context) => AlertDialog(
+            title: Text(t("login_required")),
+            content: Text(t("login_required_message")),
+            actions: [
+              TextButton(
+                onPressed: () => Navigator.pop(context),
+                child: Text(t("cancel")),
+              ),
+              FilledButton(
+                onPressed: () {
+                  Navigator.pop(context);
+                  Navigator.pushNamed(context, "/login");
+                },
+                child: Text(t("login")),
+              ),
+            ],
+          ),
+        );
         return;
       }
     }

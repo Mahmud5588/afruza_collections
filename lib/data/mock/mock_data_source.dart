@@ -27,6 +27,7 @@ class MockDataSource {
       price: 150000,
       rating: 4.5,
       categoryName: "Ko'ylaklar",
+      categoryId: 1,
       imageUrls: [
         "https://images.unsplash.com/photo-1596755094514-f87e34085b2c?w=500",
         "https://images.unsplash.com/photo-1602810318383-e386cc2a3ccf?w=500",
@@ -37,6 +38,8 @@ class MockDataSource {
         ProductVariant(id: 3, name: "L", price: 155000),
         ProductVariant(id: 4, name: "XL", price: 160000),
       ],
+      viewsCount: 256,
+      soldCount: 42,
     ),
     const Product(
       id: 2,
@@ -46,6 +49,7 @@ class MockDataSource {
       price: 250000,
       rating: 4.8,
       categoryName: "Shim va Jinsi",
+      categoryId: 2,
       imageUrls: [
         "https://images.unsplash.com/photo-1542272604-787c3835535d?w=500",
         "https://images.unsplash.com/photo-1541099649105-f69ad21f3246?w=500",
@@ -56,6 +60,8 @@ class MockDataSource {
         ProductVariant(id: 7, name: "32", price: 255000),
         ProductVariant(id: 8, name: "34", price: 260000),
       ],
+      viewsCount: 489,
+      soldCount: 156,
     ),
     const Product(
       id: 3,
@@ -64,6 +70,7 @@ class MockDataSource {
       price: 450000,
       rating: 4.9,
       categoryName: "Kurtka va Palto",
+      categoryId: 3,
       imageUrls: [
         "https://images.unsplash.com/photo-1551028719-00167b16eac5?w=500",
         "https://images.unsplash.com/photo-1610045910749-c10e2a1d0b06?w=500",
@@ -73,6 +80,8 @@ class MockDataSource {
         ProductVariant(id: 10, name: "L", price: 460000),
         ProductVariant(id: 11, name: "XL", price: 470000),
       ],
+      viewsCount: 512,
+      soldCount: 98,
     ),
     const Product(
       id: 4,
@@ -82,6 +91,7 @@ class MockDataSource {
       price: 80000,
       rating: 4.3,
       categoryName: "Sport Kiyim",
+      categoryId: 8,
       imageUrls: [
         "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab?w=500",
       ],
@@ -90,6 +100,8 @@ class MockDataSource {
         ProductVariant(id: 13, name: "M", price: 80000),
         ProductVariant(id: 14, name: "L", price: 85000),
       ],
+      viewsCount: 128,
+      soldCount: 67,
     ),
     const Product(
       id: 5,
@@ -99,6 +111,7 @@ class MockDataSource {
       price: 180000,
       rating: 4.6,
       categoryName: "Futbolka va Sviter",
+      categoryId: 4,
       imageUrls: [
         "https://images.unsplash.com/photo-1576566588028-4147f3842f27?w=500",
       ],
@@ -106,6 +119,8 @@ class MockDataSource {
         ProductVariant(id: 15, name: "M", price: 180000),
         ProductVariant(id: 16, name: "L", price: 185000),
       ],
+      viewsCount: 234,
+      soldCount: 51,
     ),
     const Product(
       id: 6,
@@ -114,6 +129,7 @@ class MockDataSource {
       price: 350000,
       rating: 4.7,
       categoryName: "Sumka va Ryukzak",
+      categoryId: 7,
       imageUrls: [
         "https://images.unsplash.com/photo-1590874103328-eac38a683ce7?w=500",
       ],
@@ -121,6 +137,8 @@ class MockDataSource {
         ProductVariant(id: 17, name: "Qora", price: 350000),
         ProductVariant(id: 18, name: "Jigarrang", price: 360000),
       ],
+      viewsCount: 156,
+      soldCount: 34,
     ),
     const Product(
       id: 7,
@@ -129,6 +147,7 @@ class MockDataSource {
       price: 320000,
       rating: 4.8,
       categoryName: "Oyoq Kiyim",
+      categoryId: 6,
       imageUrls: [
         "https://images.unsplash.com/photo-1542291026-7eec264c27ff?w=500",
       ],
@@ -138,6 +157,8 @@ class MockDataSource {
         ProductVariant(id: 21, name: "42", price: 325000),
         ProductVariant(id: 22, name: "43", price: 330000),
       ],
+      viewsCount: 367,
+      soldCount: 123,
     ),
     const Product(
       id: 8,
@@ -146,6 +167,7 @@ class MockDataSource {
       price: 420000,
       rating: 4.9,
       categoryName: "Aksessuarlar",
+      categoryId: 5,
       imageUrls: [
         "https://images.unsplash.com/photo-1524592094714-0f0654e20314?w=500",
       ],
@@ -153,6 +175,8 @@ class MockDataSource {
         ProductVariant(id: 23, name: "Kumush", price: 420000),
         ProductVariant(id: 24, name: "Oltin", price: 520000),
       ],
+      viewsCount: 445,
+      soldCount: 189,
     ),
   ];
 

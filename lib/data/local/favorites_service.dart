@@ -60,11 +60,15 @@ class FavoritesService {
       "price": product.price,
       "rating": product.rating,
       "category_name": product.categoryName,
+      "category_id": product.categoryId,
       "image_urls": product.imageUrls,
       "variants": product.variants
           .map((variant) =>
               {"id": variant.id, "name": variant.name, "price": variant.price})
           .toList(),
+      "views_count": product.viewsCount,
+      "sold_count": product.soldCount,
+      "created_at": product.createdAt?.toIso8601String(),
     };
   }
 
@@ -79,6 +83,17 @@ class FavoritesService {
           ),
         )
         .toList();
+
+    DateTime? createdAt;
+    try {
+      final createdAtStr = json["created_at"] as String?;
+      if (createdAtStr != null) {
+        createdAt = DateTime.parse(createdAtStr);
+      }
+    } catch (e) {
+      // Ignore parse errors
+    }
+
     return Product(
       id: json["id"] as int,
       name: json["name"] as String,
@@ -86,10 +101,14 @@ class FavoritesService {
       price: (json["price"] as num).toDouble(),
       rating: (json["rating"] as num).toDouble(),
       categoryName: json["category_name"] as String,
+      categoryId: json["category_id"] as int?,
       imageUrls: (json["image_urls"] as List<dynamic>)
           .map((e) => e as String)
           .toList(),
       variants: variants,
+      viewsCount: json["views_count"] as int? ?? 0,
+      soldCount: json["sold_count"] as int? ?? 0,
+      createdAt: createdAt,
     );
   }
 }

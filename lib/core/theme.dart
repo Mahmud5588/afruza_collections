@@ -6,35 +6,70 @@ ThemeData buildAppTheme() {
 
   final textTheme = TextTheme(
     displayLarge: GoogleFonts.playfairDisplay(
-      fontSize: 36,
-      fontWeight: FontWeight.w600,
+      fontSize: 40,
+      fontWeight: FontWeight.w700,
       color: colors.charcoal,
-      height: 1.1,
+      height: 1.2,
+      letterSpacing: -0.5,
+    ),
+    displayMedium: GoogleFonts.playfairDisplay(
+      fontSize: 32,
+      fontWeight: FontWeight.w700,
+      color: colors.charcoal,
+      height: 1.2,
     ),
     titleLarge: GoogleFonts.playfairDisplay(
-      fontSize: 24,
-      fontWeight: FontWeight.w600,
+      fontSize: 28,
+      fontWeight: FontWeight.w700,
       color: colors.charcoal,
+      height: 1.3,
     ),
     titleMedium: GoogleFonts.playfairDisplay(
+      fontSize: 22,
+      fontWeight: FontWeight.w600,
+      color: colors.charcoal,
+      height: 1.3,
+    ),
+    titleSmall: GoogleFonts.playfairDisplay(
       fontSize: 18,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,
+      height: 1.3,
     ),
     bodyLarge: GoogleFonts.sourceSans3(
-      fontSize: 16,
+      fontSize: 17,
       fontWeight: FontWeight.w400,
       color: colors.charcoal,
+      height: 1.5,
     ),
     bodyMedium: GoogleFonts.sourceSans3(
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: FontWeight.w400,
       color: colors.charcoal,
+      height: 1.5,
+    ),
+    bodySmall: GoogleFonts.sourceSans3(
+      fontSize: 13,
+      fontWeight: FontWeight.w400,
+      color: colors.charcoal,
+      height: 1.4,
     ),
     labelLarge: GoogleFonts.sourceSans3(
-      fontSize: 14,
+      fontSize: 15,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,
+      letterSpacing: 0.3,
+    ),
+    labelMedium: GoogleFonts.sourceSans3(
+      fontSize: 13,
+      fontWeight: FontWeight.w600,
+      color: colors.charcoal,
+    ),
+    labelSmall: GoogleFonts.sourceSans3(
+      fontSize: 11,
+      fontWeight: FontWeight.w600,
+      color: colors.charcoal,
+      letterSpacing: 0.5,
     ),
   );
 
@@ -83,8 +118,8 @@ ThemeData buildAppTheme() {
         borderRadius: BorderRadius.circular(16),
         borderSide: BorderSide.none,
       ),
-      hintStyle:
-          textTheme.bodyMedium?.copyWith(color: colors.charcoal.withOpacity(0.5)),
+      hintStyle: textTheme.bodyMedium
+          ?.copyWith(color: colors.charcoal.withOpacity(0.5)),
       contentPadding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
       prefixIconColor: colors.ink.withOpacity(0.6),
     ),

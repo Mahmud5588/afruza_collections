@@ -306,7 +306,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             final product = state.mostViewed[index];
                             final heroTag = "viewed-product-${product.id}";
                             return SizedBox(
-                              width: 200,
+                              width: 220,
                               child: ProductCard(
                                 product: product,
                                 heroTag: heroTag,
@@ -353,7 +353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             final product = state.mostSold[index];
                             final heroTag = "sold-product-${product.id}";
                             return SizedBox(
-                              width: 200,
+                              width: 220,
                               child: ProductCard(
                                 product: product,
                                 heroTag: heroTag,

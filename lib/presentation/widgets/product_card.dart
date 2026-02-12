@@ -45,7 +45,7 @@ class ProductCard extends StatelessWidget {
           crossAxisAlignment: CrossAxisAlignment.start,
           children: [
             Expanded(
-              flex: 6,
+              flex: 8,
               child: Hero(
                 tag: resolvedHeroTag,
                 child: ClipRRect(
@@ -57,16 +57,16 @@ class ProductCard extends StatelessWidget {
                           ? product.imageUrls.first
                           : "https://images.unsplash.com/photo-1521572163474-6864f9cf17ab",
                       width: double.infinity,
-                      fit: BoxFit.contain,
+                      fit: BoxFit.cover,
                       placeholder: (context, url) => const Center(
                         child: SizedBox(
-                          width: 20,
-                          height: 20,
+                          width: 24,
+                          height: 24,
                           child: CircularProgressIndicator(strokeWidth: 2),
                         ),
                       ),
                       errorWidget: (context, url, error) => const Center(
-                        child: Icon(Icons.broken_image_outlined, size: 28),
+                        child: Icon(Icons.broken_image_outlined, size: 32),
                       ),
                     ),
                   ),

@@ -335,6 +335,11 @@ class AppLocalizations {
       "ru": "Оформить заказ",
       "en": "Order now",
     },
+    "price": {
+      "uz": "Narx",
+      "ru": "Цена",
+      "en": "Price",
+    },
     "order_placed": {
       "uz": "Buyurtma qabul qilindi",
       "ru": "Заказ оформлен",
@@ -369,11 +374,6 @@ class AppLocalizations {
       "uz": "Yopish",
       "ru": "Закрыть",
       "en": "Close",
-    },
-    "cancel": {
-      "uz": "Bekor qilish",
-      "ru": "Отмена",
-      "en": "Cancel",
     },
     "chat": {
       "uz": "Chat",
@@ -469,6 +469,26 @@ class AppLocalizations {
       "uz": "Hisobdan chiqish",
       "ru": "Выйти из аккаунта",
       "en": "Sign out of your account",
+    },
+    "confirm_logout": {
+      "uz": "Chiqishni tasdiqlang",
+      "ru": "Подтверждение выхода",
+      "en": "Confirm sign out",
+    },
+    "logout_message": {
+      "uz": "Rostdan ham hisobdan chiqmoqchisiz?",
+      "ru": "Вы действительно хотите выйти?",
+      "en": "Are you sure you want to sign out?",
+    },
+    "login_required_message": {
+      "uz": "Ushbu funksiyani ishlatish uchun avval tizimga kiring.",
+      "ru": "Для использования этой функции необходимо войти.",
+      "en": "You need to sign in to access this feature.",
+    },
+    "cancel": {
+      "uz": "Bekor qilish",
+      "ru": "Отмена",
+      "en": "Cancel",
     },
     "products": {
       "uz": "Mahsulotlar",
