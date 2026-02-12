@@ -1,0 +1,474 @@
+import "package:flutter/material.dart";
+import "package:flutter_bloc/flutter_bloc.dart";
+
+import "../../../core/di.dart";
+import "../../../core/ui_constants.dart";
+import "../../../domain/entities/category.dart";
+import "../../../domain/entities/product.dart";
+import "../../blocs/auth/admin/admin_product_bloc.dart";
+import "../../blocs/category/category_bloc.dart";
+import "../../widgets/empty_state.dart";
+import "../../widgets/skeleton_box.dart";
+
+class AdminProductScreen extends StatefulWidget {
+  const AdminProductScreen({super.key});
+
+  @override
+  State<AdminProductScreen> createState() => _AdminProductScreenState();
+}
+
+class _AdminProductScreenState extends State<AdminProductScreen> {
+  late final AdminProductBloc _productBloc;
+  late final CategoryBloc _categoryBloc;
+
+  final _nameController = TextEditingController();
+  final _descriptionController = TextEditingController();
+  final _priceController = TextEditingController();
+  final _ratingController = TextEditingController(text: "0");
+  final _imagesController = TextEditingController();
+  final _variantsController = TextEditingController();
+  Category? _selectedCategory;
+
+  @override
+  void initState() {
+    super.initState();
+    _productBloc = sl<AdminProductBloc>();
+    _categoryBloc = sl<CategoryBloc>();
+    _productBloc.add(const LoadAdminProducts());
+    _categoryBloc.add(const LoadCategories());
+  }
+
+  @override
+  void dispose() {
+    _nameController.dispose();
+    _descriptionController.dispose();
+    _priceController.dispose();
+    _ratingController.dispose();
+    _imagesController.dispose();
+    _variantsController.dispose();
+    _productBloc.close();
+    _categoryBloc.close();
+    super.dispose();
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    return MultiBlocProvider(
+      providers: [
+        BlocProvider.value(value: _productBloc),
+        BlocProvider.value(value: _categoryBloc),
+      ],
+      child: Scaffold(
+        body: Container(
+          decoration: const BoxDecoration(gradient: AppGradients.hero),
+          child: SafeArea(
+            child: ListView(
+              padding: const EdgeInsets.all(AppSpacing.lg),
+              children: [
+                Row(
+                  children: [
+                    IconButton(
+                      onPressed: () => Navigator.pop(context),
+                      icon: const Icon(Icons.arrow_back_ios_new),
+                    ),
+                    Text("Manage products",
+                        style: Theme.of(context).textTheme.titleLarge),
+                  ],
+                ),
+                const SizedBox(height: AppSpacing.md),
+                _buildCreateForm(context),
+                const SizedBox(height: AppSpacing.lg),
+                BlocBuilder<AdminProductBloc, AdminProductState>(
+                  builder: (context, state) {
+                    if (state.status == AdminProductStatus.loading) {
+                      return Column(
+                        children: const [
+                          SkeletonBox(height: 20),
+                          SizedBox(height: 12),
+                          SkeletonBox(height: 20),
+                          SizedBox(height: 12),
+                          SkeletonBox(height: 20),
+                        ],
+                      );
+                    }
+                    if (state.status == AdminProductStatus.failure) {
+                      return EmptyState(
+                        title: "Failed to load",
+                        subtitle: state.message ?? "Please try again.",
+                        onAction: () => context
+                            .read<AdminProductBloc>()
+                            .add(const LoadAdminProducts()),
+                        actionLabel: "Retry",
+                      );
+                    }
+                    if (state.products.isEmpty) {
+                      return const EmptyState(
+                        title: "No products",
+                        subtitle: "Add your first product above.",
+                      );
+                    }
+
+                    return Column(
+                      children: state.products
+                          .map(
+                            (product) => ListTile(
+                              title: Text(product.name),
+                              subtitle: Text(product.categoryName),
+                              trailing: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  IconButton(
+                                    icon: const Icon(Icons.edit_outlined),
+                                    onPressed: () =>
+                                        _showEditSheet(context, product),
+                                  ),
+                                  IconButton(
+                                    icon: const Icon(Icons.delete_outline),
+                                    onPressed: () => context
+                                        .read<AdminProductBloc>()
+                                        .add(DeleteAdminProduct(
+                                            productId: product.id)),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          )
+                          .toList(),
+                    );
+                  },
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildCreateForm(BuildContext context) {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface,
+        borderRadius: BorderRadius.circular(20),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Text("Add product", style: Theme.of(context).textTheme.titleMedium),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _nameController,
+            decoration: const InputDecoration(hintText: "Product name"),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _descriptionController,
+            decoration: const InputDecoration(hintText: "Description"),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _priceController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(hintText: "Price"),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _ratingController,
+            keyboardType: TextInputType.number,
+            decoration: const InputDecoration(hintText: "Rating (0-5)"),
+          ),
+          const SizedBox(height: 12),
+          BlocBuilder<CategoryBloc, CategoryState>(
+            builder: (context, state) {
+              final items = state.categories;
+              return DropdownButtonFormField<Category>(
+                value: _selectedCategory,
+                items: items
+                    .map(
+                      (category) => DropdownMenuItem(
+                        value: category,
+                        child: Text(category.name),
+                      ),
+                    )
+                    .toList(),
+                onChanged: (value) => setState(() => _selectedCategory = value),
+                decoration: const InputDecoration(hintText: "Category"),
+              );
+            },
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _imagesController,
+            decoration:
+                const InputDecoration(hintText: "Image URLs (comma separated)"),
+          ),
+          const SizedBox(height: 12),
+          TextField(
+            controller: _variantsController,
+            decoration: const InputDecoration(
+              hintText: "Variants (name:price, comma separated)",
+            ),
+          ),
+          const SizedBox(height: 12),
+          Align(
+            alignment: Alignment.centerRight,
+            child: FilledButton(
+              onPressed: () => _submit(context),
+              child: const Text("Create"),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _submit(BuildContext context) {
+    final name = _nameController.text.trim();
+    final description = _descriptionController.text.trim();
+    final price = double.tryParse(_priceController.text.trim());
+    final rating = double.tryParse(_ratingController.text.trim()) ?? 0;
+    final category = _selectedCategory;
+
+    if (name.isEmpty ||
+        description.isEmpty ||
+        price == null ||
+        category == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Fill all required fields")),
+      );
+      return;
+    }
+
+    final images = _imagesController.text
+        .split(",")
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty)
+        .toList();
+
+    final variants = _parseVariants(_variantsController.text);
+
+    context.read<AdminProductBloc>().add(
+          CreateAdminProduct(
+            name: name,
+            description: description,
+            price: price,
+            rating: rating,
+            categoryId: category.id,
+            images: images,
+            variants: variants,
+          ),
+        );
+
+    _nameController.clear();
+    _descriptionController.clear();
+    _priceController.clear();
+    _ratingController.text = "0";
+    _imagesController.clear();
+    _variantsController.clear();
+  }
+
+  Future<void> _showEditSheet(BuildContext context, Product product) async {
+    final nameController = TextEditingController(text: product.name);
+    final descriptionController =
+        TextEditingController(text: product.description);
+    final priceController =
+        TextEditingController(text: product.price.toString());
+    final ratingController =
+        TextEditingController(text: product.rating.toString());
+    final imagesController =
+        TextEditingController(text: product.imageUrls.join(", "));
+    final variantsController =
+        TextEditingController(text: _formatVariants(product.variants));
+
+    Category? selectedCategory;
+
+    await showModalBottomSheet<void>(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: EdgeInsets.only(
+            bottom: MediaQuery.of(context).viewInsets.bottom,
+            left: 16,
+            right: 16,
+            top: 16,
+          ),
+          child: StatefulBuilder(
+            builder: (context, setModalState) {
+              return BlocBuilder<CategoryBloc, CategoryState>(
+                builder: (context, state) {
+                  final items = state.categories;
+                  if (selectedCategory == null && items.isNotEmpty) {
+                    selectedCategory = items.firstWhere(
+                      (category) => category.name == product.categoryName,
+                      orElse: () => items.first,
+                    );
+                  }
+
+                  return ListView(
+                    shrinkWrap: true,
+                    children: [
+                      Text("Edit product",
+                          style: Theme.of(context).textTheme.titleLarge),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: nameController,
+                        decoration:
+                            const InputDecoration(hintText: "Product name"),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: descriptionController,
+                        decoration:
+                            const InputDecoration(hintText: "Description"),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: priceController,
+                        keyboardType: TextInputType.number,
+                        decoration: const InputDecoration(hintText: "Price"),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: ratingController,
+                        keyboardType: TextInputType.number,
+                        decoration:
+                            const InputDecoration(hintText: "Rating (0-5)"),
+                      ),
+                      const SizedBox(height: 12),
+                      DropdownButtonFormField<Category>(
+                        value: selectedCategory,
+                        items: items
+                            .map(
+                              (category) => DropdownMenuItem(
+                                value: category,
+                                child: Text(category.name),
+                              ),
+                            )
+                            .toList(),
+                        onChanged: (value) =>
+                            setModalState(() => selectedCategory = value),
+                        decoration: const InputDecoration(hintText: "Category"),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: imagesController,
+                        decoration: const InputDecoration(
+                            hintText: "Image URLs (comma separated)"),
+                      ),
+                      const SizedBox(height: 12),
+                      TextField(
+                        controller: variantsController,
+                        decoration: const InputDecoration(
+                          hintText: "Variants (name:price, comma separated)",
+                        ),
+                      ),
+                      const SizedBox(height: 16),
+                      Row(
+                        mainAxisAlignment: MainAxisAlignment.end,
+                        children: [
+                          TextButton(
+                            onPressed: () => Navigator.pop(context),
+                            child: const Text("Cancel"),
+                          ),
+                          const SizedBox(width: 8),
+                          FilledButton(
+                            onPressed: () => _submitEdit(
+                              context,
+                              product.id,
+                              nameController.text.trim(),
+                              descriptionController.text.trim(),
+                              priceController.text.trim(),
+                              ratingController.text.trim(),
+                              selectedCategory,
+                              imagesController.text,
+                              variantsController.text,
+                            ),
+                            child: const Text("Save"),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                    ],
+                  );
+                },
+              );
+            },
+          ),
+        );
+      },
+    );
+  }
+
+  void _submitEdit(
+    BuildContext context,
+    int productId,
+    String name,
+    String description,
+    String priceText,
+    String ratingText,
+    Category? category,
+    String imagesText,
+    String variantsText,
+  ) {
+    final price = double.tryParse(priceText);
+    final rating = double.tryParse(ratingText) ?? 0;
+    if (name.isEmpty ||
+        description.isEmpty ||
+        price == null ||
+        category == null) {
+      ScaffoldMessenger.of(context).showSnackBar(
+        const SnackBar(content: Text("Fill all required fields")),
+      );
+      return;
+    }
+
+    final images = imagesText
+        .split(",")
+        .map((value) => value.trim())
+        .where((value) => value.isNotEmpty)
+        .toList();
+
+    final variants = _parseVariants(variantsText);
+
+    context.read<AdminProductBloc>().add(
+          UpdateAdminProduct(
+            productId: productId,
+            name: name,
+            description: description,
+            price: price,
+            rating: rating,
+            categoryId: category.id,
+            images: images,
+            variants: variants,
+          ),
+        );
+
+    Navigator.pop(context);
+  }
+
+  List<Map<String, dynamic>> _parseVariants(String raw) {
+    final entries = raw.split(",");
+    final variants = <Map<String, dynamic>>[];
+    for (final entry in entries) {
+      final trimmed = entry.trim();
+      if (trimmed.isEmpty) continue;
+      final parts =
+          trimmed.contains(":") ? trimmed.split(":") : trimmed.split("=");
+      if (parts.length < 2) continue;
+      final name = parts[0].trim();
+      final price = double.tryParse(parts[1].trim());
+      if (name.isEmpty || price == null) continue;
+      variants.add({"name": name, "price": price});
+    }
+    return variants;
+  }
+
+  String _formatVariants(List<ProductVariant> variants) {
+    if (variants.isEmpty) return "";
+    return variants
+        .map((variant) => "${variant.name}:${variant.price}")
+        .join(", ");
+  }
+}
