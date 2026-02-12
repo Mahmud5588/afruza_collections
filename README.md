@@ -1,16 +1,39 @@
-# afruza_collection_mobile
+# Afruza Collections — Mobile App (Flutter)
 
-A new Flutter project.
+> **Afruza Collections** uchun mobil ilova. Loyiha Flutter’da yozilgan va Android/iOS’ni qo‘llab-quvvatlaydi.
 
-## Getting Started
+---
 
-This project is a starting point for a Flutter application.
+## ✨ Qisqacha
+- **Platformalar:** Android, iOS
+- **Framework:** Flutter
+- **Kod bazasi:** `lib/` papkada
 
-A few resources to get you started if this is your first Flutter project:
+> Izoh: Loyihada `MOCK_MODE_README.md` mavjud — agar API/Backend bo‘lmasa yoki test qilish kerak bo‘lsa, mock rejimni yoqish bo‘yicha ko‘rsatmalarni o‘sha faylda saqlang.
 
-- [Lab: Write your first Flutter app](https://docs.flutter.dev/get-started/codelab)
-- [Cookbook: Useful Flutter samples](https://docs.flutter.dev/cookbook)
+---
 
-For help getting started with Flutter development, view the
-[online documentation](https://docs.flutter.dev/), which offers tutorials,
-samples, guidance on mobile development, and a full API reference.
+## 📦 Tech Stack
+- Flutter / Dart
+- (Kerak bo‘lsa shu yerga: State management, Networking, DI, Local storage va h.k. qo‘shib chiqasiz)
+
+---
+
+## 🗂 Loyihaning tuzilishi
+Umumiy strukturadan:
+- `lib/` — asosiy ilova kodi
+- `assets/` — rasm/icon/font va boshqa resurslar
+- `test/` — testlar
+- `android/` — Android konfiguratsiya
+- `ios/` — iOS konfiguratsiya
+
+---
+
+## ✅ Talablar
+- Flutter SDK (stable)
+- Android Studio / Xcode (platformaga qarab)
+- Emulator yoki real device
+
+Flutter tekshirish:
+```bash
+flutter doctor
