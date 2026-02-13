@@ -38,6 +38,10 @@ class OrderRepositoryMock implements OrderRepository {
     required int productId,
     int? variantId,
     required int quantity,
+    required String deliveryAddress,
+    double? deliveryLat,
+    double? deliveryLng,
+    String? deliveryNote,
   }) async {
     if (!AppConfig.useMockData) {
       throw Exception("Mock mode o'chirilgan!");

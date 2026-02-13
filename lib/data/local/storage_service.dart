@@ -8,6 +8,7 @@ class StorageService {
   final FlutterSecureStorage secureStorage;
 
   static const _tokenKey = "auth_token";
+  static const _refreshTokenKey = "refresh_token";
   static const _tokenIssuedAtKey = "auth_token_issued_at";
   static const _isAdminKey = "is_admin";
   static const _localeKey = "app_locale";
@@ -20,8 +21,16 @@ class StorageService {
     );
   }
 
+  Future<void> saveRefreshToken(String refreshToken) async {
+    await secureStorage.write(key: _refreshTokenKey, value: refreshToken);
+  }
+
   Future<String?> readToken() {
     return secureStorage.read(key: _tokenKey);
+  }
+
+  Future<String?> readRefreshToken() {
+    return secureStorage.read(key: _refreshTokenKey);
   }
 
   Future<DateTime?> readTokenIssuedAt() async {
@@ -63,6 +72,7 @@ class StorageService {
 
   Future<void> clearToken() async {
     await secureStorage.delete(key: _tokenKey);
+    await secureStorage.delete(key: _refreshTokenKey);
     await prefs.remove(_tokenIssuedAtKey);
     await prefs.remove(_isAdminKey);
   }

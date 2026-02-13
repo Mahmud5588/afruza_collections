@@ -5,67 +5,67 @@ ThemeData buildAppTheme() {
   const colors = _AppColors();
 
   final textTheme = TextTheme(
-    displayLarge: GoogleFonts.playfairDisplay(
+    displayLarge: GoogleFonts.poppins(
       fontSize: 40,
       fontWeight: FontWeight.w700,
       color: colors.charcoal,
       height: 1.2,
       letterSpacing: -0.5,
     ),
-    displayMedium: GoogleFonts.playfairDisplay(
+    displayMedium: GoogleFonts.poppins(
       fontSize: 32,
       fontWeight: FontWeight.w700,
       color: colors.charcoal,
       height: 1.2,
     ),
-    titleLarge: GoogleFonts.playfairDisplay(
+    titleLarge: GoogleFonts.poppins(
       fontSize: 28,
       fontWeight: FontWeight.w700,
       color: colors.charcoal,
       height: 1.3,
     ),
-    titleMedium: GoogleFonts.playfairDisplay(
+    titleMedium: GoogleFonts.poppins(
       fontSize: 22,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,
       height: 1.3,
     ),
-    titleSmall: GoogleFonts.playfairDisplay(
+    titleSmall: GoogleFonts.poppins(
       fontSize: 18,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,
       height: 1.3,
     ),
-    bodyLarge: GoogleFonts.sourceSans3(
+    bodyLarge: GoogleFonts.inter(
       fontSize: 17,
       fontWeight: FontWeight.w400,
       color: colors.charcoal,
       height: 1.5,
     ),
-    bodyMedium: GoogleFonts.sourceSans3(
+    bodyMedium: GoogleFonts.inter(
       fontSize: 15,
       fontWeight: FontWeight.w400,
       color: colors.charcoal,
       height: 1.5,
     ),
-    bodySmall: GoogleFonts.sourceSans3(
+    bodySmall: GoogleFonts.inter(
       fontSize: 13,
       fontWeight: FontWeight.w400,
       color: colors.charcoal,
       height: 1.4,
     ),
-    labelLarge: GoogleFonts.sourceSans3(
+    labelLarge: GoogleFonts.inter(
       fontSize: 15,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,
       letterSpacing: 0.3,
     ),
-    labelMedium: GoogleFonts.sourceSans3(
+    labelMedium: GoogleFonts.inter(
       fontSize: 13,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,
     ),
-    labelSmall: GoogleFonts.sourceSans3(
+    labelSmall: GoogleFonts.inter(
       fontSize: 11,
       fontWeight: FontWeight.w600,
       color: colors.charcoal,

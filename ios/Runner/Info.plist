@@ -26,8 +26,23 @@
 	<true/>
 	<key>NSAppTransportSecurity</key>
 	<dict>
+		<!-- Disable arbitrary loads for security -->
 		<key>NSAllowsArbitraryLoads</key>
-		<true/>
+		<false/>
+		<!-- Only allow HTTPS connections with proper TLS -->
+		<key>NSExceptionDomains</key>
+		<dict>
+			<key>bek85.me</key>
+			<dict>
+				<!-- Require HTTPS only -->
+				<key>NSIncludesSubdomains</key>
+				<true/>
+				<key>NSExceptionRequiresForwardSecrecy</key>
+				<true/>
+				<key>NSExceptionMinimumTLSVersion</key>
+				<string>TLSv1.2</string>
+			</dict>
+		</dict>
 	</dict>
 	<key>NSLocationWhenInUseUsageDescription</key>
 	<string>Allow access to your location to share it in chat.</string>

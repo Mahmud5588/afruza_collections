@@ -90,6 +90,8 @@ class _SearchScreenState extends State<SearchScreen> {
               child: ListView(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(AppSpacing.lg),
+                physics: const BouncingScrollPhysics(),
+                cacheExtent: 1000,
                 children: [
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,

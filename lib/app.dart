@@ -32,11 +32,23 @@ class AfruzaApp extends StatelessWidget {
       builder: (context, locale, _) {
         return MaterialApp(
           title: "Afruza Collection",
+          debugShowCheckedModeBanner: false,
           theme: buildAppTheme(),
           locale: locale,
           supportedLocales: AppLocalizations.supportedLocales,
           localizationsDelegates: AppLocalizations.localizationsDelegates
               .cast<LocalizationsDelegate<dynamic>>(),
+          // Performance optimizations
+          scrollBehavior: const MaterialScrollBehavior().copyWith(
+            physics: const BouncingScrollPhysics(),
+          ),
+          builder: (context, child) {
+            // Prevent font scaling for consistency
+            return MediaQuery(
+              data: MediaQuery.of(context).copyWith(textScaleFactor: 1.0),
+              child: child!,
+            );
+          },
           initialRoute: "/",
           onGenerateRoute: (settings) {
             switch (settings.name) {

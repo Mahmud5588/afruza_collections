@@ -15,7 +15,7 @@ class CategoryModel {
     return CategoryModel(
       id: json["id"] as int,
       name: json["name"] as String,
-      icon: json["icon"] as String?,
+      icon: json["icon_url"] as String?, // API uses icon_url
     );
   }
 

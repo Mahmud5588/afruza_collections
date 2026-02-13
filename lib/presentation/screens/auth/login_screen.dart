@@ -43,10 +43,12 @@ class _LoginScreenState extends State<LoginScreen> {
           },
           child: Scaffold(
             body: Container(
+              height: double.infinity,
+              width: double.infinity,
               decoration: const BoxDecoration(gradient: AppGradients.hero),
-              padding: const EdgeInsets.all(24),
               child: SafeArea(
                 child: SingleChildScrollView(
+                  padding: const EdgeInsets.all(24),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
@@ -65,7 +67,12 @@ class _LoginScreenState extends State<LoginScreen> {
                             const SizedBox(height: 16),
                             Text(
                               t("login_title"),
-                              style: Theme.of(context).textTheme.displayLarge,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .headlineMedium
+                                  ?.copyWith(
+                                    fontWeight: FontWeight.bold,
+                                  ),
                             ),
                           ],
                         ),

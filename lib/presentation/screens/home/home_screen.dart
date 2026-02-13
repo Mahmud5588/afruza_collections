@@ -1,8 +1,6 @@
 import "dart:async";
-
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-
 import "../../../core/di.dart";
 import "../../../core/localization/app_localizations.dart";
 import "../../../core/ui_constants.dart";
@@ -75,6 +73,8 @@ class _HomeScreenState extends State<HomeScreen> {
               child: ListView(
                 controller: _scrollController,
                 padding: const EdgeInsets.all(AppSpacing.lg),
+                physics: const BouncingScrollPhysics(),
+                cacheExtent: 1000,
                 children: [
                   AnimatedListItem(
                     index: 0,
@@ -93,13 +93,18 @@ class _HomeScreenState extends State<HomeScreen> {
                             children: [
                               Text(
                                 "Afruza Collection",
-                                style: Theme.of(context).textTheme.titleLarge,
+                                style: Theme.of(context)
+                                    .textTheme
+                                    .titleMedium
+                                    ?.copyWith(
+                                      fontWeight: FontWeight.w600,
+                                    ),
                                 overflow: TextOverflow.ellipsis,
                               ),
-                              const SizedBox(height: 4),
+                              const SizedBox(height: 2),
                               Text(
                                 t("brand_tagline"),
-                                style: Theme.of(context).textTheme.bodyMedium,
+                                style: Theme.of(context).textTheme.bodySmall,
                                 overflow: TextOverflow.ellipsis,
                               ),
                             ],
@@ -246,7 +251,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
-                          childAspectRatio: 0.72,
+                          childAspectRatio: 0.65,
                         ),
                         itemBuilder: (context, index) {
                           final product = state.products[index];
@@ -420,7 +425,7 @@ class _HomeScreenState extends State<HomeScreen> {
         crossAxisCount: 2,
         mainAxisSpacing: 16,
         crossAxisSpacing: 16,
-        childAspectRatio: 0.72,
+        childAspectRatio: 0.65,
       ),
       itemBuilder: (context, index) {
         return Container(
@@ -432,7 +437,7 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SkeletonBox(height: 110, radius: 16),
+              const SkeletonBox(height: 160, radius: 16),
               const SizedBox(height: 6),
               const SkeletonBox(height: 14, width: 120),
               const SizedBox(height: 6),

@@ -1,5 +1,6 @@
 import "package:dio/dio.dart";
 
+import "../../core/logger.dart";
 import "../../domain/entities/order.dart";
 import "../../domain/entities/paged_result.dart";
 import "../../domain/repositories/order_repository.dart";
@@ -12,9 +13,17 @@ class OrderRepositoryImpl implements OrderRepository {
   final Dio dio;
 
   @override
-  Future<void> createOrder(
-      {required int productId, int? variantId, required int quantity}) async {
+  Future<void> createOrder({
+    required int productId,
+    int? variantId,
+    required int quantity,
+    required String deliveryAddress,
+    double? deliveryLat,
+    double? deliveryLng,
+    String? deliveryNote,
+  }) async {
     try {
+      AppLogger.info("Creating order for product: $productId");
       await dio.post(
         "/orders",
         data: {
@@ -25,9 +34,15 @@ class OrderRepositoryImpl implements OrderRepository {
               "quantity": quantity
             },
           ],
+          "delivery_address_text": deliveryAddress,
+          if (deliveryLat != null) "delivery_lat": deliveryLat,
+          if (deliveryLng != null) "delivery_lng": deliveryLng,
+          if (deliveryNote != null) "delivery_note": deliveryNote,
         },
       );
+      AppLogger.success("Order created successfully");
     } on DioException catch (error) {
+      AppLogger.error("Order creation failed", error: error);
       throw mapDioError(error);
     }
   }

@@ -43,3 +43,66 @@ app.*.map.json
 /android/app/debug
 /android/app/profile
 /android/app/release
+
+# ============================================
+# 🔒 SECURITY - Never commit these files!
+# ============================================
+
+# Environment variables and secrets
+.env
+.env.local
+.env.*.local
+*.env
+env.dart
+secrets.dart
+config.dart
+
+# API Keys and credentials
+**/api_keys.dart
+**/credentials.dart
+**/secrets/
+
+# Android signing keys
+*.jks
+*.keystore
+key.properties
+**/android/key.properties
+**/android/app/key.properties
+
+# iOS certificates and profiles
+*.mobileprovision
+*.p12
+*.cer
+*.certSigningRequest
+
+# Firebase
+google-services.json
+GoogleService-Info.plist
+firebase_options.dart
+
+# Sentry
+sentry.properties
+
+# Tokens and session files
+**/tokens/
+**/session/
+*.token
+
+# Private keys
+*.pem
+*.key
+private_key*
+
+# Backup files that may contain sensitive data
+*.backup
+*.bak
+*.old
+
+# Local database files
+*.db
+*.sqlite
+*.sqlite3
+
+# Log files that may contain sensitive data
+logs/
+*.log

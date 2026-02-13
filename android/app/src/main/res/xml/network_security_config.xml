@@ -1,0 +1,33 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Production configuration with certificate pinning -->
+    <domain-config cleartextTrafficPermitted="false">
+        <domain includeSubdomains="true">bek85.me</domain>
+        <trust-anchors>
+            <!-- Trust system certificates -->
+            <certificates src="system" />
+            <!-- Trust user-added certificates for debugging (remove in production) -->
+            <certificates src="user" />
+        </trust-anchors>
+        <pin-set expiration="2026-01-01">
+            <!-- Add your server's SSL certificate SHA-256 pin here -->
+            <!-- You can get the pin using: openssl s_client -connect bek85.me:443 | openssl x509 -pubkey -noout | openssl pkey -pubin -outform der | openssl dgst -sha256 -binary | openssl enc -base64 -->
+            <!-- <pin digest="SHA-256">BASE64_ENCODED_PIN_HERE</pin> -->
+        </pin-set>
+    </domain-config>
+
+    <!-- Default configuration for other domains -->
+    <base-config cleartextTrafficPermitted="false">
+        <trust-anchors>
+            <certificates src="system" />
+        </trust-anchors>
+    </base-config>
+
+    <!-- Debug configuration (only if needed for local development) -->
+    <!-- <debug-overrides>
+        <trust-anchors>
+            <certificates src="user" />
+            <certificates src="system" />
+        </trust-anchors>
+    </debug-overrides> -->
+</network-security-config>
