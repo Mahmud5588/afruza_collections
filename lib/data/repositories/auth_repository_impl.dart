@@ -1,6 +1,11 @@
 import "package:dio/dio.dart";
 
-import "../../core/logger.dart\";\nimport \"../../core/security/token_security.dart\";\nimport \"../local/storage_service.dart\";\nimport \"../models/auth_token_model.dart\";\nimport \"../remote/error_mapper.dart\";\nimport \"../../domain/repositories/auth_repository.dart\";
+import "../../core/logger.dart";
+import "../../core/security/token_security.dart";
+import "../local/storage_service.dart";
+import "../models/auth_token_model.dart";
+import "../remote/error_mapper.dart";
+import "../../domain/repositories/auth_repository.dart";
 
 class AuthRepositoryImpl implements AuthRepository {
   AuthRepositoryImpl(this.dio, this.storage);
@@ -49,6 +54,26 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   @override
+  Future<void> registerAdmin(
+      {required String email, required String password}) async {
+    try {
+      AppLogger.warning("ADMIN Registration attempt for: $email");
+      await dio.post(
+        "/auth/register",
+        data: {
+          "email": email,
+          "password": password,
+          "is_admin": true, // TEMPORARY: For development testing only
+        },
+      );
+      AppLogger.success("Admin registration successful for: $email");
+    } on DioException catch (error) {
+      AppLogger.error("Admin registration failed for: $email", error: error);
+      throw mapDioError(error);
+    }
+  }
+
+  @override
   Future<void> logout() async {
     AppLogger.info("User logged out");
     return storage.clearToken();
@@ -59,14 +84,14 @@ class AuthRepositoryImpl implements AuthRepository {
 
     // Validate token format before storing
     if (!TokenSecurity.isValidTokenFormat(token.accessToken)) {
-      AppLogger.error(\"Invalid access token format received from server\");
-      throw Exception(\"Invalid token format\");
+      AppLogger.error("Invalid access token format received from server");
+      throw Exception("Invalid token format");
     }
 
     if (token.refreshToken != null &&
         !TokenSecurity.isValidTokenFormat(token.refreshToken!)) {
-      AppLogger.error(\"Invalid refresh token format received from server\");
-      throw Exception(\"Invalid refresh token format\");
+      AppLogger.error("Invalid refresh token format received from server");
+      throw Exception("Invalid refresh token format");
     }
 
     await storage.saveToken(token.accessToken);

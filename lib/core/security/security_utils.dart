@@ -77,8 +77,8 @@ class SecurityUtils {
   static String sanitizeInput(String input) {
     // Remove potentially dangerous characters
     return input
-        .replaceAll(RegExp(r"[<>\"']"), "")
-        .replaceAll(RegExp(r"[\r\n]"), "")
+        .replaceAll(RegExp(r'''[<>'"&]'''), '')
+        .replaceAll(RegExp(r'[\r\n\t]'), ' ')
         .trim();
   }
 

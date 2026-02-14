@@ -64,6 +64,24 @@ class AuthRepositoryMock implements AuthRepository {
   }
 
   @override
+  Future<void> registerAdmin(
+      {required String email, required String password}) async {
+    if (!AppConfig.useMockData) {
+      throw Exception("Mock mode o'chirilgan!");
+    }
+
+    // Mock delay
+    await Future.delayed(const Duration(milliseconds: 500));
+
+    if (_mockUsers.containsKey(email)) {
+      throw Exception("Bu email allaqachon ro'yxatdan o'tgan!");
+    }
+
+    // Mock mode'da admin qo'shilmaydi, faqat success qaytariladi
+    // Real backend'da bu admin foydalanuvchi bazaga qo'shiladi
+  }
+
+  @override
   Future<void> logout() async {
     await storage.clearToken();
   }
