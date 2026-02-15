@@ -20,17 +20,20 @@ class AdminCategoryState extends Equatable {
     List<Category>? categories,
     bool? isLoadingMore,
     bool? hasReachedMax,
-    String? message,
+    Object? message = _undefined,
   }) {
     return AdminCategoryState(
       status: status ?? this.status,
       categories: categories ?? this.categories,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-      message: message ?? this.message,
+      message: message == _undefined ? this.message : message as String?,
     );
   }
 
   @override
-  List<Object?> get props => [status, categories, isLoadingMore, hasReachedMax, message];
+  List<Object?> get props =>
+      [status, categories, isLoadingMore, hasReachedMax, message];
 }
+
+const _undefined = Object();

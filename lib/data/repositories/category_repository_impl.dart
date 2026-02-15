@@ -41,18 +41,27 @@ class CategoryRepositoryImpl implements CategoryRepository {
   }
 
   @override
-  Future<void> createCategory({required String name}) async {
+  Future<void> createCategory({required String name, String? iconUrl}) async {
     try {
-      await dio.post("/categories", data: {"name": name});
+      final data = {"name": name};
+      if (iconUrl != null) {
+        data["icon_url"] = iconUrl;
+      }
+      await dio.post("/categories", data: data);
     } on DioException catch (error) {
       throw mapDioError(error);
     }
   }
 
   @override
-  Future<void> updateCategory({required int categoryId, required String name}) async {
+  Future<void> updateCategory(
+      {required int categoryId, required String name, String? iconUrl}) async {
     try {
-      await dio.put("/categories/$categoryId", data: {"name": name});
+      final data = {"name": name};
+      if (iconUrl != null) {
+        data["icon_url"] = iconUrl;
+      }
+      await dio.put("/categories/$categoryId", data: data);
     } on DioException catch (error) {
       throw mapDioError(error);
     }

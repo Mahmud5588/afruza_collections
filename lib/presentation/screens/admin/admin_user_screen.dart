@@ -69,9 +69,7 @@ class _AdminUserScreenState extends State<AdminUserScreen> {
                       return EmptyState(
                         title: "Failed to load",
                         subtitle: state.message ?? "Please try again.",
-                        onAction: () => context
-                            .read<AdminUserBloc>()
-                            .add(const LoadAdminUsers()),
+                        onAction: () => _bloc.add(const LoadAdminUsers()),
                         actionLabel: "Retry",
                       );
                     }

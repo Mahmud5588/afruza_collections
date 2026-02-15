@@ -14,15 +14,17 @@ class AdminUserState extends Equatable {
   AdminUserState copyWith({
     AdminUserStatus? status,
     List<UserAccount>? users,
-    String? message,
+    Object? message = _undefined,
   }) {
     return AdminUserState(
       status: status ?? this.status,
       users: users ?? this.users,
-      message: message ?? this.message,
+      message: message == _undefined ? this.message : message as String?,
     );
   }
 
   @override
   List<Object?> get props => [status, users, message];
 }
+
+const _undefined = Object();

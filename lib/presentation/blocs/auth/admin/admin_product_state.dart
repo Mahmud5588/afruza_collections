@@ -14,15 +14,17 @@ class AdminProductState extends Equatable {
   AdminProductState copyWith({
     AdminProductStatus? status,
     List<Product>? products,
-    String? message,
+    Object? message = _undefined,
   }) {
     return AdminProductState(
       status: status ?? this.status,
       products: products ?? this.products,
-      message: message ?? this.message,
+      message: message == _undefined ? this.message : message as String?,
     );
   }
 
   @override
   List<Object?> get props => [status, products, message];
 }
+
+const _undefined = Object();

@@ -14,15 +14,17 @@ class CategoryState extends Equatable {
   CategoryState copyWith({
     CategoryStatus? status,
     List<Category>? categories,
-    String? message,
+    Object? message = _undefined,
   }) {
     return CategoryState(
       status: status ?? this.status,
       categories: categories ?? this.categories,
-      message: message ?? this.message,
+      message: message == _undefined ? this.message : message as String?,
     );
   }
 
   @override
   List<Object?> get props => [status, categories, message];
 }
+
+const _undefined = Object();

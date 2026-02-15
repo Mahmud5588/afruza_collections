@@ -21,7 +21,13 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
   @override
   void initState() {
     super.initState();
-    _future = sl<FavoritesService>().readFavorites();
+    _loadFavorites();
+  }
+
+  void _loadFavorites() {
+    setState(() {
+      _future = sl<FavoritesService>().readFavorites();
+    });
   }
 
   @override
@@ -68,7 +74,7 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           crossAxisCount: 2,
                           mainAxisSpacing: 16,
                           crossAxisSpacing: 16,
-                          childAspectRatio: 0.72,
+                          childAspectRatio: 0.75,
                         ),
                         itemBuilder: (context, index) {
                           final product = items[index];
@@ -76,14 +82,18 @@ class _FavoritesScreenState extends State<FavoritesScreen> {
                           return ProductCard(
                             product: product,
                             heroTag: heroTag,
-                            onTap: () => Navigator.pushNamed(
-                              context,
-                              "/product",
-                              arguments: {
-                                "product": product,
-                                "heroTag": heroTag
-                              },
-                            ),
+                            onTap: () async {
+                              await Navigator.pushNamed(
+                                context,
+                                "/product",
+                                arguments: {
+                                  "product": product,
+                                  "heroTag": heroTag
+                                },
+                              );
+                              // Reload favorites when returning from product detail
+                              _loadFavorites();
+                            },
                           );
                         },
                       );

@@ -70,7 +70,7 @@ class ProductRepositoryImpl implements ProductRepository {
           "price": price,
           "rating": rating,
           "category_id": categoryId,
-          "images": images,
+          "images": images, // Backend oddiy string array qabul qiladi
           "variants": variants,
         },
       );
@@ -99,7 +99,7 @@ class ProductRepositoryImpl implements ProductRepository {
           "price": price,
           "rating": rating,
           "category_id": categoryId,
-          "images": images,
+          "images": images, // Backend oddiy string array qabul qiladi
           "variants": variants,
         },
       );

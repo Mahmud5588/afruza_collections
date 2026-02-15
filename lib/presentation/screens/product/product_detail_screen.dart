@@ -5,11 +5,15 @@ import "package:intl/intl.dart";
 import "../../../core/di.dart";
 import "../../../core/localization/app_localizations.dart";
 import "../../../core/ui_constants.dart";
+import "../../../core/feature_availability_service.dart";
 import "../../../data/remote/api_exception.dart";
 import "../../../data/local/storage_service.dart";
 import "../../../domain/entities/product.dart";
+import "../../../domain/entities/comment.dart";
+import "../../../domain/repositories/comment_repository.dart";
 import "../../../domain/usecases/create_order.dart";
 import "../../widgets/favorite_button.dart";
+import "../../widgets/comment_section.dart";
 
 class ProductDetailScreen extends StatefulWidget {
   const ProductDetailScreen({super.key});
@@ -22,6 +26,62 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
   int quantity = 1;
   bool _isSubmitting = false;
   ProductVariant? _selectedVariant;
+
+  // Comment feature state
+  bool _isCommentsAvailable = false;
+  List<Comment> _comments = [];
+  bool _commentsLoading = true;
+
+  @override
+  void initState() {
+    super.initState();
+    _checkCommentsFeature();
+  }
+
+  Future<void> _checkCommentsFeature() async {
+    try {
+      final featureService = sl<FeatureAvailabilityService>();
+      final available = await featureService.isCommentsAvailable();
+
+      if (available) {
+        // Backend mavjud - real izohlarni yuklash
+        final product = _getProduct();
+        if (product != null) {
+          final comments = await sl<CommentRepository>().fetchComments(
+            productId: product.id,
+          );
+          if (mounted) {
+            setState(() {
+              _isCommentsAvailable = true;
+              _comments = comments;
+              _commentsLoading = false;
+            });
+          }
+        }
+      } else {
+        // Backend yo'q - coming soon ko'rsatish
+        if (mounted) {
+          setState(() {
+            _isCommentsAvailable = false;
+            _commentsLoading = false;
+          });
+        }
+      }
+    } catch (error) {
+      // Xatolik - coming soon ko'rsatish
+      if (mounted) {
+        setState(() {
+          _isCommentsAvailable = false;
+          _commentsLoading = false;
+        });
+      }
+    }
+  }
+
+  Product? _getProduct() {
+    final args = ModalRoute.of(context)?.settings.arguments;
+    return args is Product ? args : (args as Map?)?["product"] as Product?;
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -249,6 +309,29 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                                 : Text(t("order_now")),
                           ),
                         ),
+                        const SizedBox(height: 32),
+
+                        // Comment section
+                        if (!_commentsLoading)
+                          CommentSection(
+                            productId: product.id,
+                            isFeatureAvailable: _isCommentsAvailable,
+                            comments: _comments,
+                            onAddComment: (text, rating) async {
+                              await sl<CommentRepository>().createComment(
+                                productId: product.id,
+                                text: text,
+                                rating: rating,
+                              );
+                              // Reload comments
+                              final updatedComments =
+                                  await sl<CommentRepository>()
+                                      .fetchComments(productId: product.id);
+                              if (mounted) {
+                                setState(() => _comments = updatedComments);
+                              }
+                            },
+                          ),
                         const SizedBox(height: 16),
                       ],
                     ),

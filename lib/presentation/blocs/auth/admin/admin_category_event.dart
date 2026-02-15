@@ -24,12 +24,13 @@ class LoadMoreAdminCategories extends AdminCategoryEvent {
 }
 
 class CreateAdminCategory extends AdminCategoryEvent {
-  const CreateAdminCategory({required this.name});
+  const CreateAdminCategory({required this.name, this.iconUrl});
 
   final String name;
+  final String? iconUrl;
 
   @override
-  List<Object?> get props => [name];
+  List<Object?> get props => [name, iconUrl];
 }
 
 class DeleteAdminCategory extends AdminCategoryEvent {
@@ -42,11 +43,13 @@ class DeleteAdminCategory extends AdminCategoryEvent {
 }
 
 class UpdateAdminCategory extends AdminCategoryEvent {
-  const UpdateAdminCategory({required this.categoryId, required this.name});
+  const UpdateAdminCategory(
+      {required this.categoryId, required this.name, this.iconUrl});
 
   final int categoryId;
   final String name;
+  final String? iconUrl;
 
   @override
-  List<Object?> get props => [categoryId, name];
+  List<Object?> get props => [categoryId, name, iconUrl];
 }

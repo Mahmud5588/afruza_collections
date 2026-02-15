@@ -437,12 +437,12 @@ class _HomeScreenState extends State<HomeScreen> {
           child: Column(
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              const SkeletonBox(height: 160, radius: 16),
+              const Expanded(child: SkeletonBox(radius: 16)),
               const SizedBox(height: 6),
               const SkeletonBox(height: 14, width: 120),
               const SizedBox(height: 6),
               const SkeletonBox(height: 10, width: 80),
-              const Spacer(),
+              const SizedBox(height: 6),
               const SkeletonBox(height: 12, width: 90),
             ],
           ),

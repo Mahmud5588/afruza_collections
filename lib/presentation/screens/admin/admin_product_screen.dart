@@ -29,6 +29,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
   final _variantsController = TextEditingController();
   final List<String> _selectedImages = [];
   Category? _selectedCategory;
+  int _formResetKey = 0; // Key to force ImagePickerField reset
 
   @override
   void initState() {
@@ -58,86 +59,97 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         BlocProvider.value(value: _productBloc),
         BlocProvider.value(value: _categoryBloc),
       ],
-      child: Scaffold(
-        body: Container(
-          decoration: const BoxDecoration(gradient: AppGradients.hero),
-          child: SafeArea(
-            child: ListView(
-              padding: const EdgeInsets.all(AppSpacing.lg),
-              children: [
-                Row(
-                  children: [
-                    IconButton(
-                      onPressed: () => Navigator.pop(context),
-                      icon: const Icon(Icons.arrow_back_ios_new),
-                    ),
-                    Text("Manage products",
-                        style: Theme.of(context).textTheme.titleLarge),
-                  ],
-                ),
-                const SizedBox(height: AppSpacing.md),
-                _buildCreateForm(context),
-                const SizedBox(height: AppSpacing.lg),
-                BlocBuilder<AdminProductBloc, AdminProductState>(
-                  builder: (context, state) {
-                    if (state.status == AdminProductStatus.loading) {
-                      return Column(
-                        children: const [
-                          SkeletonBox(height: 20),
-                          SizedBox(height: 12),
-                          SkeletonBox(height: 20),
-                          SizedBox(height: 12),
-                          SkeletonBox(height: 20),
-                        ],
-                      );
-                    }
-                    if (state.status == AdminProductStatus.failure) {
-                      return EmptyState(
-                        title: "Failed to load",
-                        subtitle: state.message ?? "Please try again.",
-                        onAction: () => context
-                            .read<AdminProductBloc>()
-                            .add(const LoadAdminProducts()),
-                        actionLabel: "Retry",
-                      );
-                    }
-                    if (state.products.isEmpty) {
-                      return const EmptyState(
-                        title: "No products",
-                        subtitle: "Add your first product above.",
-                      );
-                    }
+      child: BlocListener<AdminProductBloc, AdminProductState>(
+        listener: (context, state) {
+          if (state.status == AdminProductStatus.failure &&
+              state.message != null) {
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text(state.message!),
+                backgroundColor: Colors.red,
+              ),
+            );
+          }
+        },
+        child: Scaffold(
+          body: Container(
+            decoration: const BoxDecoration(gradient: AppGradients.hero),
+            child: SafeArea(
+              child: ListView(
+                padding: const EdgeInsets.all(AppSpacing.lg),
+                children: [
+                  Row(
+                    children: [
+                      IconButton(
+                        onPressed: () => Navigator.pop(context),
+                        icon: const Icon(Icons.arrow_back_ios_new),
+                      ),
+                      Text("Manage products",
+                          style: Theme.of(context).textTheme.titleLarge),
+                    ],
+                  ),
+                  const SizedBox(height: AppSpacing.md),
+                  _buildCreateForm(context),
+                  const SizedBox(height: AppSpacing.lg),
+                  BlocBuilder<AdminProductBloc, AdminProductState>(
+                    builder: (context, state) {
+                      if (state.status == AdminProductStatus.loading) {
+                        return Column(
+                          children: const [
+                            SkeletonBox(height: 20),
+                            SizedBox(height: 12),
+                            SkeletonBox(height: 20),
+                            SizedBox(height: 12),
+                            SkeletonBox(height: 20),
+                          ],
+                        );
+                      }
+                      if (state.status == AdminProductStatus.failure) {
+                        return EmptyState(
+                          title: "Failed to load",
+                          subtitle: state.message ?? "Please try again.",
+                          onAction: () =>
+                              _productBloc.add(const LoadAdminProducts()),
+                          actionLabel: "Retry",
+                        );
+                      }
+                      if (state.products.isEmpty) {
+                        return const EmptyState(
+                          title: "No products",
+                          subtitle: "Add your first product above.",
+                        );
+                      }
 
-                    return Column(
-                      children: state.products
-                          .map(
-                            (product) => ListTile(
-                              title: Text(product.name),
-                              subtitle: Text(product.categoryName),
-                              trailing: Row(
-                                mainAxisSize: MainAxisSize.min,
-                                children: [
-                                  IconButton(
-                                    icon: const Icon(Icons.edit_outlined),
-                                    onPressed: () =>
-                                        _showEditSheet(context, product),
-                                  ),
-                                  IconButton(
-                                    icon: const Icon(Icons.delete_outline),
-                                    onPressed: () => context
-                                        .read<AdminProductBloc>()
-                                        .add(DeleteAdminProduct(
-                                            productId: product.id)),
-                                  ),
-                                ],
+                      return Column(
+                        children: state.products
+                            .map(
+                              (product) => ListTile(
+                                title: Text(product.name),
+                                subtitle: Text(product.categoryName),
+                                trailing: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    IconButton(
+                                      icon: const Icon(Icons.edit_outlined),
+                                      onPressed: () =>
+                                          _showEditSheet(context, product),
+                                    ),
+                                    IconButton(
+                                      icon: const Icon(Icons.delete_outline),
+                                      onPressed: () => _productBloc.add(
+                                          DeleteAdminProduct(
+                                              productId: product.id)),
+                                    ),
+                                  ],
+                                ),
                               ),
-                            ),
-                          )
-                          .toList(),
-                    );
-                  },
-                ),
-              ],
+                            )
+                            .toList(),
+                      );
+                    },
+                  ),
+                ],
+              ),
             ),
           ),
         ),
@@ -199,6 +211,7 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           ),
           const SizedBox(height: 12),
           ImagePickerField(
+            key: ValueKey(_formResetKey),
             initialImages: const [],
             onImagesSelected: (images) {
               _selectedImages.clear();
@@ -209,8 +222,13 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           const SizedBox(height: 12),
           TextField(
             controller: _variantsController,
+            maxLines: 3,
             decoration: const InputDecoration(
-              hintText: "Variants (name:price, comma separated)",
+              labelText: "Variantlar (ixtiyoriy)",
+              hintText:
+                  "Kichik:50000, O'rta:75000, Katta:100000\nQizil:85000, Ko'k:85000\nM:60000, L:70000, XL:80000",
+              helperText: "Format: nom:narx, vergul bilan ajratilgan",
+              helperMaxLines: 2,
             ),
           ),
           const SizedBox(height: 12),
@@ -247,17 +265,17 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
     final variants = _parseVariants(_variantsController.text);
 
-    context.read<AdminProductBloc>().add(
-          CreateAdminProduct(
-            name: name,
-            description: description,
-            price: price,
-            rating: rating,
-            categoryId: category.id,
-            images: _selectedImages,
-            variants: variants,
-          ),
-        );
+    _productBloc.add(
+      CreateAdminProduct(
+        name: name,
+        description: description,
+        price: price,
+        rating: rating,
+        categoryId: category.id,
+        images: _selectedImages,
+        variants: variants,
+      ),
+    );
 
     _nameController.clear();
     _descriptionController.clear();
@@ -265,6 +283,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     _ratingController.text = "0";
     _variantsController.clear();
     _selectedImages.clear();
+    _selectedCategory = null;
+    _formResetKey++; // Increment to force ImagePickerField reset
     setState(() {});
   }
 
@@ -364,8 +384,14 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                       const SizedBox(height: 12),
                       TextField(
                         controller: variantsController,
+                        maxLines: 3,
                         decoration: const InputDecoration(
-                          hintText: "Variants (name:price, comma separated)",
+                          labelText: "Variantlar (ixtiyoriy)",
+                          hintText:
+                              "Kichik:50000, O'rta:75000, Katta:100000\nQizil:85000, Ko'k:85000",
+                          helperText:
+                              "Format: nom:narx, vergul bilan ajratilgan",
+                          helperMaxLines: 2,
                         ),
                       ),
                       const SizedBox(height: 16),
@@ -432,18 +458,18 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
 
     final variants = _parseVariants(variantsText);
 
-    context.read<AdminProductBloc>().add(
-          UpdateAdminProduct(
-            productId: productId,
-            name: name,
-            description: description,
-            price: price,
-            rating: rating,
-            categoryId: category.id,
-            images: images,
-            variants: variants,
-          ),
-        );
+    _productBloc.add(
+      UpdateAdminProduct(
+        productId: productId,
+        name: name,
+        description: description,
+        price: price,
+        rating: rating,
+        categoryId: category.id,
+        images: images,
+        variants: variants,
+      ),
+    );
 
     Navigator.pop(context);
   }

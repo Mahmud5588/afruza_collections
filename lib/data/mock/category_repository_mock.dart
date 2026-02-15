@@ -36,7 +36,7 @@ class CategoryRepositoryMock implements CategoryRepository {
   }
 
   @override
-  Future<void> createCategory({required String name}) async {
+  Future<void> createCategory({required String name, String? iconUrl}) async {
     if (!AppConfig.useMockData) {
       throw Exception("Mock mode o'chirilgan!");
     }
@@ -48,12 +48,12 @@ class CategoryRepositoryMock implements CategoryRepository {
         ? 1
         : _categories.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1;
 
-    _categories.add(Category(id: newId, name: name, icon: null));
+    _categories.add(Category(id: newId, name: name, icon: iconUrl));
   }
 
   @override
   Future<void> updateCategory(
-      {required int categoryId, required String name}) async {
+      {required int categoryId, required String name, String? iconUrl}) async {
     if (!AppConfig.useMockData) {
       throw Exception("Mock mode o'chirilgan!");
     }
@@ -68,7 +68,7 @@ class CategoryRepositoryMock implements CategoryRepository {
 
     final oldCategory = _categories[index];
     _categories[index] =
-        Category(id: categoryId, name: name, icon: oldCategory.icon);
+        Category(id: categoryId, name: name, icon: iconUrl ?? oldCategory.icon);
   }
 
   @override

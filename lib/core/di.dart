@@ -14,19 +14,16 @@ import "../data/repositories/order_repository_impl.dart";
 import "../data/repositories/product_repository_impl.dart";
 import "../data/repositories/recommendation_repository_impl.dart";
 import "../data/repositories/user_repository_impl.dart";
-import "../data/mock/auth_repository_mock.dart";
-import "../data/mock/category_repository_mock.dart";
-import "../data/mock/order_repository_mock.dart";
-import "../data/mock/product_repository_mock.dart";
-import "../data/mock/recommendation_repository_mock.dart";
-import "../data/mock/user_repository_mock.dart";
+import "../data/repositories/comment_repository_impl.dart";
+// Mock imports are commented - only real API is used
 import "../domain/repositories/auth_repository.dart";
 import "../domain/repositories/category_repository.dart";
 import "../domain/repositories/order_repository.dart";
 import "../domain/repositories/product_repository.dart";
 import "../domain/repositories/recommendation_repository.dart";
 import "../domain/repositories/user_repository.dart";
-import "app_config.dart";
+import "../domain/repositories/comment_repository.dart";
+import "feature_availability_service.dart";
 import "../domain/usecases/create_order.dart";
 import "../domain/usecases/create_category.dart";
 import "../domain/usecases/create_product.dart";
@@ -70,31 +67,22 @@ Future<void> configureDependencies() async {
   sl.registerLazySingleton<LocaleController>(() => LocaleController());
 
   sl.registerLazySingleton<Dio>(() => buildDioClient(sl()));
+  sl.registerLazySingleton<FeatureAvailabilityService>(
+      () => FeatureAvailabilityService(sl()));
 
-  // Repository'larni mock yoki real implementatsiya bilan ro'yxatdan o'tkazish
-  if (AppConfig.useMockData) {
-    // MOCK MODE: Backend tayyor bo'lgunicha mock datalardan foydalanish
-    sl.registerLazySingleton<AuthRepository>(() => AuthRepositoryMock(sl()));
-    sl.registerLazySingleton<CategoryRepository>(
-        () => CategoryRepositoryMock());
-    sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryMock());
-    sl.registerLazySingleton<ProductRepository>(() => ProductRepositoryMock());
-    sl.registerLazySingleton<RecommendationRepository>(
-        () => RecommendationRepositoryMock());
-    sl.registerLazySingleton<UserRepository>(() => UserRepositoryMock());
-  } else {
-    // REAL MODE: Real API bilan ishlash
-    sl.registerLazySingleton<AuthRepository>(
-        () => AuthRepositoryImpl(sl(), sl()));
-    sl.registerLazySingleton<CategoryRepository>(
-        () => CategoryRepositoryImpl(sl()));
-    sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
-    sl.registerLazySingleton<ProductRepository>(
-        () => ProductRepositoryImpl(sl()));
-    sl.registerLazySingleton<RecommendationRepository>(
-        () => RecommendationRepositoryImpl(sl()));
-    sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(sl()));
-  }
+  // Repository'lar - Real API ishlatilyapti (mock o'chirildi)
+  sl.registerLazySingleton<AuthRepository>(
+      () => AuthRepositoryImpl(sl(), sl()));
+  sl.registerLazySingleton<CategoryRepository>(
+      () => CategoryRepositoryImpl(sl()));
+  sl.registerLazySingleton<OrderRepository>(() => OrderRepositoryImpl(sl()));
+  sl.registerLazySingleton<ProductRepository>(
+      () => ProductRepositoryImpl(sl()));
+  sl.registerLazySingleton<RecommendationRepository>(
+      () => RecommendationRepositoryImpl(sl()));
+  sl.registerLazySingleton<UserRepository>(() => UserRepositoryImpl(sl()));
+  sl.registerLazySingleton<CommentRepository>(
+      () => CommentRepositoryImpl(sl()));
   sl.registerLazySingleton<LoginUser>(() => LoginUser(sl()));
   sl.registerLazySingleton<LogoutUser>(() => LogoutUser(sl()));
   sl.registerLazySingleton<RegisterUser>(() => RegisterUser(sl()));

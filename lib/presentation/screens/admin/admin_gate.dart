@@ -12,16 +12,20 @@ class AdminGate extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return FutureBuilder<bool>(
-      future: sl<StorageService>().readIsAdmin(),
+    return FutureBuilder<Map<String, dynamic>>(
+      future: _checkAdminAccess(),
       builder: (context, snapshot) {
         if (snapshot.connectionState == ConnectionState.waiting) {
           return const Scaffold(
             body: Center(child: CircularProgressIndicator()),
           );
         }
-        final isAdmin = snapshot.data ?? false;
-        if (!isAdmin) {
+
+        final data = snapshot.data ?? {};
+        final isAdmin = data['isAdmin'] as bool? ?? false;
+        final hasToken = data['hasToken'] as bool? ?? false;
+
+        if (!isAdmin || !hasToken) {
           final t = AppLocalizations.of(context).t;
           return Scaffold(
             body: Container(
@@ -38,20 +42,32 @@ class AdminGate extends StatelessWidget {
                             color: Theme.of(context).colorScheme.secondary),
                         const SizedBox(height: 16),
                         Text(
-                          t("access_denied"),
+                          hasToken ? t("access_denied") : t("login_required"),
                           style: Theme.of(context).textTheme.titleLarge,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 8),
                         Text(
-                          t("admin_only"),
+                          hasToken
+                              ? t("admin_only")
+                              : "Iltimos, admin sifatida login qiling",
                           style: Theme.of(context).textTheme.bodyMedium,
                           textAlign: TextAlign.center,
                         ),
                         const SizedBox(height: 20),
                         FilledButton(
-                          onPressed: () => Navigator.pop(context),
-                          child: Text(t("go_back")),
+                          onPressed: () {
+                            if (!hasToken) {
+                              Navigator.pushNamedAndRemoveUntil(
+                                context,
+                                "/login",
+                                (route) => route.settings.name == "/root",
+                              );
+                            } else {
+                              Navigator.pop(context);
+                            }
+                          },
+                          child: Text(hasToken ? t("go_back") : "Login"),
                         ),
                       ],
                     ),
@@ -64,5 +80,22 @@ class AdminGate extends StatelessWidget {
         return child;
       },
     );
+  }
+
+  Future<Map<String, dynamic>> _checkAdminAccess() async {
+    final storage = sl<StorageService>();
+    final isAdmin = await storage.readIsAdmin();
+    final token = await storage.readToken();
+    final hasToken = token != null && token.isNotEmpty;
+
+    // Agar token yo'q bo'lsa, isAdmin flagini tozalash
+    if (!hasToken && isAdmin) {
+      await storage.clearToken();
+    }
+
+    return {
+      'isAdmin': isAdmin,
+      'hasToken': hasToken,
+    };
   }
 }

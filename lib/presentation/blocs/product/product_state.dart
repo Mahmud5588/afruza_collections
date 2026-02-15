@@ -28,22 +28,23 @@ class ProductState extends Equatable {
     List<Product>? products,
     bool? isLoadingMore,
     bool? hasReachedMax,
-    String? query,
-    int? categoryId,
-    double? minPrice,
-    double? maxPrice,
-    String? message,
+    Object? query = _undefined,
+    Object? categoryId = _undefined,
+    Object? minPrice = _undefined,
+    Object? maxPrice = _undefined,
+    Object? message = _undefined,
   }) {
     return ProductState(
       status: status ?? this.status,
       products: products ?? this.products,
       isLoadingMore: isLoadingMore ?? this.isLoadingMore,
       hasReachedMax: hasReachedMax ?? this.hasReachedMax,
-      query: query ?? this.query,
-      categoryId: categoryId ?? this.categoryId,
-      minPrice: minPrice ?? this.minPrice,
-      maxPrice: maxPrice ?? this.maxPrice,
-      message: message ?? this.message,
+      query: query == _undefined ? this.query : query as String?,
+      categoryId:
+          categoryId == _undefined ? this.categoryId : categoryId as int?,
+      minPrice: minPrice == _undefined ? this.minPrice : minPrice as double?,
+      maxPrice: maxPrice == _undefined ? this.maxPrice : maxPrice as double?,
+      message: message == _undefined ? this.message : message as String?,
     );
   }
 
@@ -60,3 +61,5 @@ class ProductState extends Equatable {
         message,
       ];
 }
+
+const _undefined = Object();

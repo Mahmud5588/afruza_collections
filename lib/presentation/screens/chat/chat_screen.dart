@@ -51,7 +51,10 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _connect() {
-    final wsBase = AppConfig.apiBaseUrl.replaceFirst("http", "ws");
+    // Convert HTTP(S) to WS(S) properly
+    final wsBase = AppConfig.apiBaseUrl
+        .replaceFirst("https://", "wss://")
+        .replaceFirst("http://", "ws://");
     final roomId = widget.userId ?? "admin";
     final uri = Uri.parse("$wsBase/ws/chat/$roomId?client_id=$_clientId");
     _channel = WebSocketChannel.connect(uri);

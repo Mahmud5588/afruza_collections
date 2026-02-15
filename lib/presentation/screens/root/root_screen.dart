@@ -63,7 +63,8 @@ class _RootScreenState extends State<RootScreen> {
   }
 
   Future<void> _handleTap(BuildContext context, int index) async {
-    if (index == 2) {
+    // Orders (index 2) va Profile (index 3) uchun login talab qilinadi
+    if (index == 2 || index == 3) {
       final storage = sl<StorageService>();
       final isLoggedIn = await storage.isTokenValid(const Duration(days: 30));
       if (!isLoggedIn) {

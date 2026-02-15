@@ -5,7 +5,7 @@ class CreateCategory {
 
   final CategoryRepository repository;
 
-  Future<void> call({required String name}) {
-    return repository.createCategory(name: name);
+  Future<void> call({required String name, String? iconUrl}) {
+    return repository.createCategory(name: name, iconUrl: iconUrl);
   }
 }
