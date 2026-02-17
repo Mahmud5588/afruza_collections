@@ -30,13 +30,17 @@ Dio buildDioClient(StorageService storage) {
       onRequest: (options, handler) async {
         // Add auth token
         final token = await storage.readToken();
-        if (token != null) {
+        if (token != null && token.isNotEmpty) {
           // Validate token format before sending
           if (TokenSecurity.isValidTokenFormat(token)) {
             options.headers["Authorization"] = "Bearer $token";
+            AppLogger.debug("Token added to request (length: ${token.length})");
           } else {
-            AppLogger.warning("Invalid token format detected");
+            AppLogger.warning(
+                "Invalid token format detected (length: ${token.length})");
           }
+        } else {
+          AppLogger.debug("No token available for request to ${options.path}");
         }
 
         // Log request (sanitized)

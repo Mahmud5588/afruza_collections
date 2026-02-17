@@ -6,7 +6,6 @@ import 'package:flutter_bloc/flutter_bloc.dart';
 import '../../../core/di.dart';
 import '../../../core/localization/app_localizations.dart';
 import '../../../core/ui_constants.dart';
-import '../../../core/category_icons.dart';
 import '../../../domain/entities/product.dart';
 import '../../../domain/entities/category.dart';
 import '../../blocs/product/product_bloc.dart';
@@ -15,6 +14,7 @@ import '../../widgets/empty_state.dart';
 import '../../widgets/product_card.dart';
 import '../../widgets/section_header.dart';
 import '../../widgets/skeleton_box.dart';
+import '../../widgets/category_icon.dart';
 
 class SearchScreen extends StatefulWidget {
   const SearchScreen({super.key});
@@ -115,7 +115,6 @@ class _SearchScreenState extends State<SearchScreen> {
             _maxPrice = maxPrice;
           });
           _submitSearch();
-          Navigator.pop(context);
         },
       ),
     );
@@ -376,11 +375,12 @@ class _FilterBottomSheetState extends State<_FilterBottomSheet> {
                   },
                 ),
                 ...widget.categories.map((category) {
-                  final icon = category.icon != null
-                      ? CategoryIcons.getIcon(category.icon)
-                      : CategoryIcons.getDefaultIcon(category.name);
                   return FilterChip(
-                    avatar: Icon(icon, size: 18),
+                    avatar: CategoryIconWidget(
+                      icon: category.icon,
+                      size: 18,
+                      fallbackName: category.name,
+                    ),
                     label: Text(category.name),
                     selected: _selectedCategoryId == category.id,
                     onSelected: (_) {

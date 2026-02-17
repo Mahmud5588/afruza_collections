@@ -32,5 +32,15 @@ abstract class ProductRepository {
     required List<Map<String, dynamic>> variants,
   });
 
+  Future<void> createProductWithImage({
+    required String name,
+    required String description,
+    required double price,
+    required int categoryId,
+    required String imagePath,
+    double rating = 0,
+    List<Map<String, dynamic>>? variants,
+  });
+
   Future<void> deleteProduct({required int productId});
 }

@@ -18,7 +18,7 @@ if (keystorePropertiesFile.exists()) {
 android {
     namespace = "com.afruza.collection"
     compileSdk = flutter.compileSdkVersion
-    ndkVersion = "29.0.14206865"
+    // ndkVersion removed - let Gradle auto-detect
 
     compileOptions {
         sourceCompatibility = JavaVersion.VERSION_17
@@ -34,7 +34,8 @@ android {
     defaultConfig {
         applicationId = "com.afruza.collection"
         minSdk = flutter.minSdkVersion
-        targetSdk = flutter.targetSdkVersion
+        // Google Play requires API level 35+ (Android 15)
+        targetSdk = 35
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
@@ -65,12 +66,21 @@ android {
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
                 "proguard-rules.pro",
-            )            
-            // Disable debug symbol stripping to avoid native library stripping errors
-            packagingOptions {
-                doNotStrip("**/libc++_shared.so")
-                doNotStrip("**/libflutter.so")
-            }        }
+            )
+        }
+    }
+
+    // Disable symbol stripping completely
+    packagingOptions {
+        jniLibs {
+            useLegacyPackaging = false
+            // Don't strip native libraries
+            excludes += setOf()
+        }
+        // Keep debug symbols
+        resources {
+            excludes += setOf("META-INF/*.kotlin_module")
+        }
     }
 }
 
@@ -79,5 +89,6 @@ flutter {
 }
 
 dependencies {
-    implementation("com.google.android.play:core:1.10.3")
+    // No additional dependencies needed
+    // Flutter plugins will add their own dependencies automatically
 }

@@ -32,8 +32,30 @@ class ChatStorage {
   }
 
   Future<int> getUnreadCount(String roomId) async {
-    // Mock implementation - real uygulamada unread flagini saqlash kerak
-    final messages = await loadMessages(roomId: roomId);
-    return messages.length > 0 ? 1 : 0;
+    final key = "chat_unread_$roomId";
+    return prefs.getInt(key) ?? 0;
+  }
+
+  Future<void> setUnreadCount(String roomId, int count) async {
+    final key = "chat_unread_$roomId";
+    await prefs.setInt(key, count);
+  }
+
+  Future<void> incrementUnreadCount(String roomId) async {
+    final current = await getUnreadCount(roomId);
+    await setUnreadCount(roomId, current + 1);
+  }
+
+  Future<void> markAsRead(String roomId) async {
+    await setUnreadCount(roomId, 0);
+  }
+
+  Future<int> getTotalUnreadCount() async {
+    final rooms = await getChatRooms();
+    int total = 0;
+    for (final room in rooms) {
+      total += await getUnreadCount(room);
+    }
+    return total;
   }
 }

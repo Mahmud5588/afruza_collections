@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:dio/dio.dart";
 
 import "../../domain/entities/paged_result.dart";
@@ -103,6 +105,53 @@ class ProductRepositoryImpl implements ProductRepository {
           "variants": variants,
         },
       );
+    } on DioException catch (error) {
+      throw mapDioError(error);
+    }
+  }
+
+  @override
+  Future<void> createProductWithImage({
+    required String name,
+    required String description,
+    required double price,
+    required int categoryId,
+    required String imagePath,
+    double rating = 0,
+    List<Map<String, dynamic>>? variants,
+  }) async {
+    try {
+      final formData = FormData();
+      formData.fields.addAll([
+        MapEntry("name", name),
+        MapEntry("description", description),
+        MapEntry("price", price.toString()),
+        MapEntry("rating", rating.toString()),
+        MapEntry("category_id", categoryId.toString()),
+      ]);
+
+      if (File(imagePath).existsSync()) {
+        formData.files.add(
+          MapEntry(
+            "image",
+            await MultipartFile.fromFile(imagePath),
+          ),
+        );
+      }
+
+      if (variants != null && variants.isNotEmpty) {
+        for (int i = 0; i < variants.length; i++) {
+          final variant = variants[i];
+          formData.fields.add(
+            MapEntry("variants[$i][name]", variant["name"].toString()),
+          );
+          formData.fields.add(
+            MapEntry("variants[$i][price]", variant["price"].toString()),
+          );
+        }
+      }
+
+      await dio.post("/products/with-image", data: formData);
     } on DioException catch (error) {
       throw mapDioError(error);
     }

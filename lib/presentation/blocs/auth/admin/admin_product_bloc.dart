@@ -3,6 +3,7 @@ import "package:equatable/equatable.dart";
 
 import "../../../../domain/entities/product.dart";
 import "../../../../domain/usecases/create_product.dart";
+import "../../../../domain/usecases/create_product_with_image.dart";
 import "../../../../domain/usecases/delete_product.dart";
 import "../../../../domain/usecases/get_products.dart";
 import "../../../../domain/usecases/update_product.dart";
@@ -12,9 +13,13 @@ part "admin_product_event.dart";
 part "admin_product_state.dart";
 
 class AdminProductBloc extends Bloc<AdminProductEvent, AdminProductState> {
-  AdminProductBloc(this._getProducts, this._createProduct, this._deleteProduct,
-      this._updateProduct)
-      : super(const AdminProductState()) {
+  AdminProductBloc(
+    this._getProducts,
+    this._createProduct,
+    this._createProductWithImage,
+    this._deleteProduct,
+    this._updateProduct,
+  ) : super(const AdminProductState()) {
     on<LoadAdminProducts>(_onLoadProducts);
     on<CreateAdminProduct>(_onCreateProduct);
     on<DeleteAdminProduct>(_onDeleteProduct);
@@ -23,6 +28,7 @@ class AdminProductBloc extends Bloc<AdminProductEvent, AdminProductState> {
 
   final GetProducts _getProducts;
   final CreateProduct _createProduct;
+  final CreateProductWithImage _createProductWithImage;
   final DeleteProduct _deleteProduct;
   final UpdateProduct _updateProduct;
 
@@ -49,15 +55,35 @@ class AdminProductBloc extends Bloc<AdminProductEvent, AdminProductState> {
   ) async {
     emit(state.copyWith(status: AdminProductStatus.loading, message: null));
     try {
-      await _createProduct(
-        name: event.name,
-        description: event.description,
-        price: event.price,
-        rating: event.rating,
-        categoryId: event.categoryId,
-        images: event.images,
-        variants: event.variants,
-      );
+      // Agar birinchi rasm file path (lokal) bo'lsa, createProductWithImage ishlatamiz
+      final hasLocalImage = event.images.isNotEmpty &&
+          !event.images.first.startsWith("http://") &&
+          !event.images.first.startsWith("https://");
+
+      if (hasLocalImage) {
+        // Backend /products/with-image endpoint faqat bitta rasm qabul qiladi
+        await _createProductWithImage(
+          name: event.name,
+          description: event.description,
+          price: event.price,
+          categoryId: event.categoryId,
+          imagePath: event.images.first,
+          rating: event.rating,
+          variants: event.variants.isEmpty ? null : event.variants,
+        );
+      } else {
+        // URL images bo'lsa oddiy create ishlatamiz
+        await _createProduct(
+          name: event.name,
+          description: event.description,
+          price: event.price,
+          rating: event.rating,
+          categoryId: event.categoryId,
+          images: event.images,
+          variants: event.variants,
+        );
+      }
+
       final result = await _getProducts();
       emit(state.copyWith(
           status: AdminProductStatus.success, products: result.items));

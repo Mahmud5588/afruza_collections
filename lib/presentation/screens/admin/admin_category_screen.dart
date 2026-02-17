@@ -1,15 +1,12 @@
-import "dart:io";
-
-import "package:dio/dio.dart";
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
-import "package:image_picker/image_picker.dart";
 
 import "../../../core/di.dart";
 import "../../../core/ui_constants.dart";
 import "../../blocs/auth/admin/admin_category_bloc.dart";
 import "../../widgets/empty_state.dart";
 import "../../widgets/skeleton_box.dart";
+import "../../widgets/category_icon.dart";
 
 class AdminCategoryScreen extends StatefulWidget {
   const AdminCategoryScreen({super.key});
@@ -23,7 +20,41 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
   final _nameController = TextEditingController();
   final _iconUrlController = TextEditingController();
   final _scrollController = ScrollController();
-  final _imagePicker = ImagePicker();
+  String? _selectedIconEmoji;
+
+  // Default kiyim iconlari
+  static const Map<String, String> _clothingIcons = {
+    '👕': 'T-shirt / Ko\'ylak',
+    '👗': 'Ko\'ylak / Libos',
+    '👔': 'Galstuk / Rasmiy',
+    '👚': 'Ayollar ko\'ylagi',
+    '👖': 'Shim / Jinsi',
+    '🧥': 'Kurtka / Palto',
+    '👘': 'Kimono / Milliy',
+    '🥻': 'Sari / Milliy libos',
+    '🩱': 'Suzish kiyimi',
+    '👙': 'Bikini',
+    '🩲': 'Ichki kiyim',
+    '🩳': 'Shorts',
+    '👟': 'Poyabzal / Krossovka',
+    '👞': "Tuflya",
+    '👠': 'Poshnali poyabzal',
+    '🥾': 'Bot / Etik',
+    '👢': 'Ayollar botinkasi',
+    '🧦': 'Paypoq',
+    '🧤': 'Qo\'lqop',
+    '🧣': 'Sharf',
+    '🎩': 'Shapka / Qalpoq',
+    '👒': 'Ayollar shlyapasi',
+    '🎓': 'Akademik shapka',
+    '👑': 'Toj / Premium',
+    '💍': 'Uzuk / Aksessuarlar',
+    '👜': 'Sumka',
+    '🎒': 'Ryukzak',
+    '🕶️': 'Ko\'zoynak',
+    '⌚': 'Soat',
+    '💄': 'Kosmetika',
+  };
 
   @override
   void initState() {
@@ -130,7 +161,17 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
                             ...state.categories
                                 .map(
                                   (category) => ListTile(
+                                    leading: CategoryIconWidget(
+                                      icon: category.icon,
+                                      size: 32,
+                                      fallbackName: category.name,
+                                    ),
                                     title: Text(category.name),
+                                    subtitle: category.icon != null
+                                        ? Text(category.icon!,
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis)
+                                        : null,
                                     trailing: Row(
                                       mainAxisSize: MainAxisSize.min,
                                       children: [
@@ -144,9 +185,9 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
                                         IconButton(
                                           icon:
                                               const Icon(Icons.delete_outline),
-                                          onPressed: () => _bloc.add(
-                                              DeleteAdminCategory(
-                                                  categoryId: category.id)),
+                                          onPressed: () =>
+                                              _showDeleteConfirmation(
+                                                  context, category),
                                         ),
                                       ],
                                     ),
@@ -196,13 +237,41 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
             decoration: const InputDecoration(hintText: "Category name"),
           ),
           const SizedBox(height: 12),
+
+          // Icon tanlash qismi
+          Row(
+            children: [
+              Text(
+                "Icon tanlang:",
+                style: Theme.of(context).textTheme.bodyMedium,
+              ),
+              const SizedBox(width: 8),
+              if (_selectedIconEmoji != null)
+                Container(
+                  padding: const EdgeInsets.all(8),
+                  decoration: BoxDecoration(
+                    color: Theme.of(context).colorScheme.primaryContainer,
+                    borderRadius: BorderRadius.circular(8),
+                  ),
+                  child: Text(
+                    _selectedIconEmoji!,
+                    style: const TextStyle(fontSize: 24),
+                  ),
+                ),
+              const Spacer(),
+              OutlinedButton.icon(
+                onPressed: _showIconPicker,
+                icon: const Icon(Icons.category_outlined),
+                label: const Text("Icon tanlash"),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
           TextField(
             controller: _iconUrlController,
             decoration: const InputDecoration(
-              hintText:
-                  "Icon URL (optional) - masalan: https://example.com/icon.png",
-              helperText:
-                  "Backend'da /upload/image endpoint yaratilgandan so'ng rasm yuklash ishlaydi",
+              hintText: "yoki Icon URL (ixtiyoriy)",
+              helperText: "Icon tanlamasangiz URL kiritishingiz mumkin",
               helperMaxLines: 2,
             ),
             maxLines: 2,
@@ -220,6 +289,66 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
     );
   }
 
+  Future<void> _showIconPicker() async {
+    final selectedEmoji = await showDialog<String>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Icon tanlang"),
+        content: SizedBox(
+          width: double.maxFinite,
+          child: GridView.builder(
+            shrinkWrap: true,
+            gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+              crossAxisCount: 5,
+              mainAxisSpacing: 8,
+              crossAxisSpacing: 8,
+            ),
+            itemCount: _clothingIcons.length,
+            itemBuilder: (context, index) {
+              final emoji = _clothingIcons.keys.elementAt(index);
+              final label = _clothingIcons[emoji]!;
+              return InkWell(
+                onTap: () => Navigator.pop(context, emoji),
+                borderRadius: BorderRadius.circular(8),
+                child: Tooltip(
+                  message: label,
+                  child: Container(
+                    decoration: BoxDecoration(
+                      border: Border.all(
+                        color: Theme.of(context).colorScheme.outline,
+                      ),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Center(
+                      child: Text(
+                        emoji,
+                        style: const TextStyle(fontSize: 32),
+                      ),
+                    ),
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Bekor qilish"),
+          ),
+        ],
+      ),
+    );
+
+    if (selectedEmoji != null && mounted) {
+      setState(() {
+        _selectedIconEmoji = selectedEmoji;
+        // Emoji'ni URL o'rniga qo'yamiz (backend string kutadi)
+        _iconUrlController.text = selectedEmoji;
+      });
+    }
+  }
+
   void _submit(BuildContext context) {
     final name = _nameController.text.trim();
     if (name.isEmpty) {
@@ -228,72 +357,20 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
       );
       return;
     }
+
+    // Icon tanlangan bo'lsa yoki URL kiritilgan bo'lsa ishlatamiz
     final iconUrl = _iconUrlController.text.trim();
+
     _bloc.add(CreateAdminCategory(
       name: name,
       iconUrl: iconUrl.isEmpty ? null : iconUrl,
     ));
+
     _nameController.clear();
     _iconUrlController.clear();
-  }
-
-  Future<void> _pickIcon() async {
-    final pickedFile =
-        await _imagePicker.pickImage(source: ImageSource.gallery);
-    if (pickedFile != null) {
-      // Show loading
-      if (!mounted) return;
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Rasm yuklanmoqda..."),
-          duration: Duration(seconds: 30),
-        ),
-      );
-
-      try {
-        // Upload to backend
-        final dio = sl<Dio>();
-        final formData = FormData.fromMap({
-          'file': await MultipartFile.fromFile(
-            pickedFile.path,
-            filename: pickedFile.name,
-          ),
-        });
-
-        final response = await dio.post('/upload/image', data: formData);
-
-        if (response.statusCode == 200) {
-          final imageUrl = response.data['url'] as String;
-          setState(() {
-            _iconUrlController.text = imageUrl;
-          });
-
-          if (!mounted) return;
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Rasm yuklandi: ${pickedFile.name}"),
-              backgroundColor: Colors.green,
-            ),
-          );
-        }
-      } catch (e) {
-        if (!mounted) return;
-        ScaffoldMessenger.of(context).clearSnackBars();
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Xatolik: Backend'da /upload/image endpoint yo'q. Qo'lda URL kiriting."),
-            backgroundColor: Colors.orange,
-            duration: const Duration(seconds: 5),
-          ),
-        );
-        // Fallback - show local path so user knows what was selected
-        setState(() {
-          _iconUrlController.text = pickedFile.path;
-        });
-      }
-    }
+    setState(() {
+      _selectedIconEmoji = null;
+    });
   }
 
   Future<void> _showEditDialog(
@@ -346,5 +423,37 @@ class _AdminCategoryScreenState extends State<AdminCategoryScreen> {
         iconUrl: result['iconUrl']!.isEmpty ? null : result['iconUrl'],
       ),
     );
+  }
+
+  Future<void> _showDeleteConfirmation(
+      BuildContext context, dynamic category) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Kategoriyani o'chirish"),
+        content: Text(
+          "'${category.name}' kategoriyasini o'chirmoqchimisiz?\n\n"
+          "Diqqat: Agar bu kategoriyada mahsulotlar bo'lsa, "
+          "ular \"Uncategorized\" kategoriyasiga o'tadi.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Bekor qilish"),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text("O'chirish"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && context.mounted) {
+      _bloc.add(DeleteAdminCategory(categoryId: category.id));
+    }
   }
 }

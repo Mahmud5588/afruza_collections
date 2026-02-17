@@ -39,14 +39,22 @@ class _FavoriteButtonState extends State<FavoriteButton> {
 
   @override
   Widget build(BuildContext context) {
-    return IconButton(
-      onPressed: _toggle,
-      icon: Icon(
-        _isFavorite ? Icons.favorite : Icons.favorite_border,
-        color: _isFavorite
-            ? Theme.of(context).colorScheme.secondary
-            : Theme.of(context).colorScheme.onSurface.withOpacity(0.6),
-        size: widget.size,
+    return Container(
+      decoration: BoxDecoration(
+        color: Theme.of(context).colorScheme.surface.withOpacity(0.8),
+        shape: BoxShape.circle,
+      ),
+      child: IconButton(
+        onPressed: _toggle,
+        icon: Icon(
+          _isFavorite ? Icons.favorite : Icons.favorite_border,
+          color: _isFavorite
+              ? Colors.red
+              : Theme.of(context).colorScheme.onSurface.withOpacity(0.7),
+          size: widget.size,
+        ),
+        padding: const EdgeInsets.all(8),
+        constraints: const BoxConstraints(),
       ),
     );
   }

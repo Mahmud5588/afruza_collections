@@ -84,4 +84,25 @@ class OrderRepositoryMock implements OrderRepository {
       ],
     ));
   }
+
+  @override
+  Future<void> updateOrderStatus(
+      {required int orderId, required String status}) async {
+    if (!AppConfig.useMockData) {
+      throw Exception("Mock mode o'chirilgan!");
+    }
+    await Future.delayed(const Duration(milliseconds: 300));
+    // Mock: statusni yangilash
+    final index = _orders.indexWhere((o) => o.id == orderId);
+    if (index != -1) {
+      final order = _orders[index];
+      _orders[index] = Order(
+        id: order.id,
+        status: status,
+        createdAt: order.createdAt,
+        total: order.total,
+        items: order.items,
+      );
+    }
+  }
 }

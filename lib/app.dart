@@ -8,12 +8,14 @@ import "presentation/screens/admin/admin_panel_screen.dart";
 import "presentation/screens/admin/admin_category_screen.dart";
 import "presentation/screens/admin/admin_product_screen.dart";
 import "presentation/screens/admin/admin_user_screen.dart";
+import "presentation/screens/admin/admin_order_screen.dart";
 import "presentation/screens/admin/admin_gate.dart";
 import "presentation/screens/auth/login_screen.dart";
 import "presentation/screens/auth/signup_screen.dart";
 import "presentation/screens/chat/chat_screen.dart";
 import "presentation/screens/chat/chat_list_screen.dart";
 import "presentation/screens/favorites/favorites_screen.dart";
+import "presentation/screens/order/address_picker_screen.dart";
 import "presentation/screens/orders/order_history_screen.dart";
 import "presentation/screens/product/product_detail_screen.dart";
 import "presentation/screens/profile/profile_screen.dart";
@@ -72,6 +74,11 @@ class AfruzaApp extends StatelessWidget {
                   settings: settings,
                   builder: (_) => const AdminGate(child: AdminUserScreen()),
                 );
+              case "/admin/orders":
+                return MaterialPageRoute(
+                  settings: settings,
+                  builder: (_) => const AdminGate(child: AdminOrderScreen()),
+                );
             }
             return null;
           },
@@ -80,6 +87,7 @@ class AfruzaApp extends StatelessWidget {
             "/root": (_) => const RootScreen(),
             "/login": (_) => const LoginScreen(),
             "/signup": (_) => const SignupScreen(),
+            "/address_picker": (_) => const AddressPickerScreen(),
             "/chat": (_) => const ChatScreen(),
             "/chat_list": (_) => const ChatListScreen(),
             "/favorites": (_) => const FavoritesScreen(),

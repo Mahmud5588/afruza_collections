@@ -1,4 +1,5 @@
 import "../../domain/entities/product.dart";
+import "../../core/app_config.dart";
 
 class ProductModel {
   ProductModel({
@@ -33,8 +34,14 @@ class ProductModel {
     final category = json["category"] as Map<String, dynamic>? ?? {};
     final images = (json["images"] as List<dynamic>? ?? [])
         .whereType<Map<String, dynamic>>()
-        .map((item) => item["url"] as String)
-        .toList();
+        .map((item) {
+      final url = item["url"] as String;
+      // Agar URL relative bo'lsa (/media/...), baseUrl bilan qo'shamiz
+      if (url.startsWith('/')) {
+        return '${AppConfig.apiBaseUrl}$url';
+      }
+      return url;
+    }).toList();
     final variantsJson = (json["variants"] as List<dynamic>? ?? [])
         .whereType<Map<String, dynamic>>()
         .map(ProductVariantModel.fromJson)

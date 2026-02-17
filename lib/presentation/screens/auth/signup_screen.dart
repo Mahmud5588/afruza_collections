@@ -18,6 +18,7 @@ class _SignupScreenState extends State<SignupScreen> {
   final _nameController = TextEditingController();
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -110,21 +111,45 @@ class _SignupScreenState extends State<SignupScreen> {
                             children: [
                               TextField(
                                 controller: _nameController,
+                                textInputAction: TextInputAction.next,
+                                textCapitalization: TextCapitalization.words,
+                                autofillHints: const [AutofillHints.name],
                                 decoration:
                                     InputDecoration(hintText: t("name")),
                               ),
                               const SizedBox(height: 16),
                               TextField(
                                 controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.email],
                                 decoration:
                                     InputDecoration(hintText: t("email")),
                               ),
                               const SizedBox(height: 16),
                               TextField(
                                 controller: _passwordController,
-                                obscureText: true,
-                                decoration:
-                                    InputDecoration(hintText: t("password")),
+                                obscureText: _obscurePassword,
+                                keyboardType: TextInputType.visiblePassword,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [
+                                  AutofillHints.newPassword
+                                ],
+                                decoration: InputDecoration(
+                                  hintText: t("password"),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 20),
                               BlocBuilder<AuthBloc, AuthState>(

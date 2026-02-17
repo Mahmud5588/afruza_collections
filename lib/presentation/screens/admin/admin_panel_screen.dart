@@ -3,6 +3,7 @@ import "package:flutter/material.dart";
 import "../../../core/di.dart";
 import "../../../core/localization/app_localizations.dart";
 import "../../../core/ui_constants.dart";
+import "../../../data/local/chat_storage.dart";
 import "../../../domain/usecases/get_categories.dart";
 import "../../../domain/usecases/get_products.dart";
 import "../../../domain/usecases/get_users.dart";
@@ -60,6 +61,13 @@ class AdminPanelScreen extends StatelessWidget {
                 subtitle: t("organize_collection"),
                 icon: Icons.category_outlined,
                 onTap: () => Navigator.pushNamed(context, "/admin/categories"),
+              ),
+              const SizedBox(height: 16),
+              _AdminTile(
+                title: t("orders"),
+                subtitle: "Buyurtmalarni ko'rish va boshqarish",
+                icon: Icons.shopping_bag_outlined,
+                onTap: () => Navigator.pushNamed(context, "/admin/orders"),
               ),
               const SizedBox(height: 16),
               _AdminTile(
@@ -170,7 +178,7 @@ class _StatCard extends StatelessWidget {
   }
 }
 
-class _AdminQuickActions extends StatelessWidget {
+class _AdminQuickActions extends StatefulWidget {
   const _AdminQuickActions({
     required this.onProducts,
     required this.onCategories,
@@ -184,6 +192,27 @@ class _AdminQuickActions extends StatelessWidget {
   final VoidCallback onChat;
 
   @override
+  State<_AdminQuickActions> createState() => _AdminQuickActionsState();
+}
+
+class _AdminQuickActionsState extends State<_AdminQuickActions> {
+  int _unreadCount = 0;
+
+  @override
+  void initState() {
+    super.initState();
+    _loadUnreadCount();
+  }
+
+  Future<void> _loadUnreadCount() async {
+    final storage = sl<ChatStorage>();
+    final count = await storage.getTotalUnreadCount();
+    if (mounted) {
+      setState(() => _unreadCount = count);
+    }
+  }
+
+  @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context).t;
     return Column(
@@ -193,13 +222,13 @@ class _AdminQuickActions extends StatelessWidget {
             _QuickActionCard(
               label: t("manage_products"),
               icon: Icons.inventory_2_outlined,
-              onTap: onProducts,
+              onTap: widget.onProducts,
             ),
             const SizedBox(width: 12),
             _QuickActionCard(
               label: t("manage_categories"),
               icon: Icons.category_outlined,
-              onTap: onCategories,
+              onTap: widget.onCategories,
             ),
           ],
         ),
@@ -209,14 +238,14 @@ class _AdminQuickActions extends StatelessWidget {
             _QuickActionCard(
               label: t("manage_users"),
               icon: Icons.people_outline,
-              onTap: onUsers,
+              onTap: widget.onUsers,
             ),
             const SizedBox(width: 12),
             _QuickActionCard(
               label: t("chat"),
               icon: Icons.chat_bubble_outline,
-              onTap: onChat,
-              badge: 3, // Mock unread count
+              onTap: widget.onChat,
+              badge: _unreadCount > 0 ? _unreadCount : null,
             ),
           ],
         ),

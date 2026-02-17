@@ -10,35 +10,37 @@ class CommentRepositoryMock implements CommentRepository {
         id: 1,
         productId: 1,
         userId: 1,
-        userEmail: "user1@test.uz",
         text: "Juda sifatli mahsulot! Tavsiya qilaman.",
-        rating: 5.0,
         createdAt: DateTime.now().subtract(const Duration(days: 2)),
       ),
       Comment(
         id: 2,
         productId: 1,
         userId: 2,
-        userEmail: "user2@test.uz",
         text: "Yaxshi, lekin biroz qimmat.",
-        rating: 4.0,
         createdAt: DateTime.now().subtract(const Duration(days: 1)),
       ),
     ],
   };
 
   @override
-  Future<List<Comment>> fetchComments({required int productId}) async {
+  Future<List<Comment>> fetchComments({
+    required int productId,
+    int? skip,
+    int? limit,
+  }) async {
     // Mock delay
     await Future.delayed(const Duration(milliseconds: 500));
-    return _comments[productId] ?? [];
+    final comments = _comments[productId] ?? [];
+    final skipValue = skip ?? 0;
+    final limitValue = limit ?? comments.length;
+    return comments.skip(skipValue).take(limitValue).toList();
   }
 
   @override
   Future<void> createComment({
     required int productId,
     required String text,
-    required double rating,
   }) async {
     await Future.delayed(const Duration(milliseconds: 300));
 
@@ -46,9 +48,7 @@ class CommentRepositoryMock implements CommentRepository {
       id: DateTime.now().millisecondsSinceEpoch,
       productId: productId,
       userId: 999, // Mock user
-      userEmail: "me@test.uz",
       text: text,
-      rating: rating,
       createdAt: DateTime.now(),
     );
 
@@ -59,8 +59,12 @@ class CommentRepositoryMock implements CommentRepository {
   }
 
   @override
-  Future<void> deleteComment({required int commentId}) async {
+  Future<void> deleteComment({
+    required int productId,
+    required int commentId,
+  }) async {
     await Future.delayed(const Duration(milliseconds: 300));
     // Mock implementation
+    _comments[productId]?.removeWhere((c) => c.id == commentId);
   }
 }

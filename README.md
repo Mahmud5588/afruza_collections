@@ -209,23 +209,54 @@ Ilova quyidagi API endpointlar bilan ishlaydi:
 Base URL: https://bek85.me
 
 Auth:
-POST   /auth/register       - Ro'yxatdan o'tish
-POST   /auth/login          - Kirish
-POST   /auth/refresh        - Token yangilash
+POST   /auth/register           - Ro'yxatdan o'tish
+POST   /auth/login              - Kirish
+POST   /auth/refresh            - Token yangilash
 
 Products:
-GET    /products            - Mahsulotlar ro'yxati
-GET    /products/:id        - Mahsulot tafsilotlari
-POST   /products            - Mahsulot qo'shish (Admin)
-PUT    /products/:id        - Mahsulot tahrirlash (Admin)
-DELETE /products/:id        - Mahsulot o'chirish (Admin)
+GET    /products/paged          - Mahsulotlar ro'yxati (pagination)
+GET    /products/:id            - Mahsulot tafsilotlari
+POST   /products                - Mahsulot qo'shish (Admin, JSON)
+POST   /products/with-image     - Mahsulot qo'shish (Admin, multipart/form-data)
+PUT    /products/:id            - Mahsulot tahrirlash (Admin)
+DELETE /products/:id            - Mahsulot o'chirish (Admin)
+
+Product Feedback (Rating):
+GET    /products/:id/rating     - Mahsulot reytingi statistikasi
+POST   /products/:id/rating     - Reyting qo'shish/yangilash (upsert)
+DELETE /products/:id/rating     - O'z reytingni o'chirish
+GET    /products/:id/my-rating  - O'z reytingni olish
 
 Categories:
-GET    /categories          - Kategoriyalar ro'yxati
+GET    /categories              - Kategoriyalar ro'yxati
+POST   /categories              - Kategoriya qo'shish (Admin)
+DELETE /categories/:id          - Kategoriya o'chirish (Admin)
 
 Orders:
-GET    /orders/me           - Mening buyurtmalarim
-POST   /orders              - Yangi buyurtma
+GET    /orders/me/paged         - Mening buyurtmalarim (pagination)
+POST   /orders                  - Yangi buyurtma
+
+Comments:
+GET    /products/:id/comments   - Mahsulot sharhlari
+POST   /products/:id/comments   - Sharh qo'shish
+DELETE /products/:id/comments/:commentId - Sharh o'chirish
+
+Chat:
+GET    /chat/with/:userId       - Foydalanuvchi bilan chat
+POST   /chat/send               - Xabar yuborish (multipart/form-data)
+
+Notifications:
+GET    /notifications           - Bildirishnomalar ro'yxati
+PATCH  /notifications/:id/read  - Bildirishnomani o'qilgan deb belgilash
+
+File Upload:
+POST   /api/upload/image        - Rasm yuklash (multipart/form-data)
+POST   /upload/image            - Rasm yuklash (alternativ)
+POST   /uploads/image           - Rasm yuklash (alternativ)
+POST   /files/upload            - Rasm yuklash (alternativ)
+
+Eslatma: File upload endpointi backend'da mavjud bo'lmasa, 
+mahsulot yaratishda /products/with-image endpointidan foydalaning.
 ```
 
 To'liq API dokumentatsiya: [https://bek85.me/docs](https://bek85.me/docs)
@@ -311,7 +342,42 @@ Pull requestlar qabul qilinadi! Katta o'zgarishlar uchun avval issue oching.
 
 ---
 
-## 📄 Litsenziya
+## � So'nggi o'zgarishlar (Latest Updates)
+
+### ✅ Tuzatilgan muammolar (Fixed Issues)
+
+1. **Comment va Rating funksionallik** - Foydalanuvchilar endi tizimga kirish orqali izoh va reyting qo'sha oladilar
+   - Backend'dan paginated response (items[], total) formatini qabul qilish qo'shildi
+   - Login tekshiruvi qo'shildi - agar foydalanuvchi tizimga kirmagan bo'lsa, login sahifasiga yo'naltiriladi
+   - 401 xatolik holatida token tozalanadi va qayta login talab qilinadi
+
+2. **WebSocket Chat** - Chat xonalaridagi ulanish xatoliklari tuzatildi
+   - Try-catch bilan error handling qo'shildi
+   - Port :0 muammosini oldini olish uchun xatolik holatini boshqarish yaxshilandi
+   - App crash bo'lishining oldini olish
+
+3. **UI Tuzatishlar**
+   - Favorite button (like) - yumaloq orqa fon qo'shildi
+   - Chat list - mock data unread counts tuzatildi (0 ga o'rnatildi)
+
+4. **API Endpoints** - Barcha backend endpointlar api_endpoints.dart faylida markazlashtirildi
+   - Rating endpoints: `/products/:id/rating` (GET, POST, DELETE)
+   - Comments endpoints: `/products/:id/comments` (GET, POST)
+   - Chat WebSocket: `wss://bek85.me/ws/chat/{roomId}`
+
+### 🚧 Ma'lum muammolar (Known Issues)
+
+1. **Rasm yuklash (Image Upload)** - Backend'da maxsus rasm yuklash endpoint'i topilmadi
+   - Sinab ko'rilgan endpointlar: `/api/upload/image`, `/upload/image`, `/uploads/image`, `/files/upload`
+   - Alternativ: `/products/with-image` endpoint'i orqali mahsulot yaratish bilan rasim yuklash
+   - Yoki URL orqali rasm qo'shish
+
+2. **Authentication** - Ba'zi foydalanuvchilar token saqlanmagan holda endpoint'larga murojaat qilganda 401 xatolik olishadi
+   - Yechim: Barcha muhim amallar uchun login tekshiruvi qo'shildi
+
+---
+
+## �📄 Litsenziya
 
 Ushbu loyiha MIT litsenziyasi ostida.
 

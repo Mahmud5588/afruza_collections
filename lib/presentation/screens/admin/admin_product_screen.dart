@@ -136,9 +136,8 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
                                     ),
                                     IconButton(
                                       icon: const Icon(Icons.delete_outline),
-                                      onPressed: () => _productBloc.add(
-                                          DeleteAdminProduct(
-                                              productId: product.id)),
+                                      onPressed: () => _showDeleteConfirmation(
+                                          context, product),
                                     ),
                                   ],
                                 ),
@@ -300,7 +299,16 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
         TextEditingController(text: _formatVariants(product.variants));
     final List<String> editImages = List.from(product.imageUrls);
 
+    // Categorylarni oldindan olamiz (BlocBuilder dialog ichida ishlamaydi)
+    final categories = _categoryBloc.state.categories;
     Category? selectedCategory;
+
+    if (categories.isNotEmpty) {
+      selectedCategory = categories.firstWhere(
+        (category) => category.name == product.categoryName,
+        orElse: () => categories.first,
+      );
+    }
 
     await showModalBottomSheet<void>(
       context: context,
@@ -315,114 +323,98 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
           ),
           child: StatefulBuilder(
             builder: (context, setModalState) {
-              return BlocBuilder<CategoryBloc, CategoryState>(
-                builder: (context, state) {
-                  final items = state.categories;
-                  if (selectedCategory == null && items.isNotEmpty) {
-                    selectedCategory = items.firstWhere(
-                      (category) => category.name == product.categoryName,
-                      orElse: () => items.first,
-                    );
-                  }
-
-                  return ListView(
-                    shrinkWrap: true,
+              return ListView(
+                shrinkWrap: true,
+                children: [
+                  Text("Edit product",
+                      style: Theme.of(context).textTheme.titleLarge),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: nameController,
+                    decoration: const InputDecoration(hintText: "Product name"),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: descriptionController,
+                    decoration: const InputDecoration(hintText: "Description"),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: priceController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(hintText: "Price"),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: ratingController,
+                    keyboardType: TextInputType.number,
+                    decoration: const InputDecoration(hintText: "Rating (0-5)"),
+                  ),
+                  const SizedBox(height: 12),
+                  DropdownButtonFormField<Category>(
+                    value: selectedCategory,
+                    items: categories
+                        .map(
+                          (category) => DropdownMenuItem(
+                            value: category,
+                            child: Text(category.name),
+                          ),
+                        )
+                        .toList(),
+                    onChanged: (value) =>
+                        setModalState(() => selectedCategory = value),
+                    decoration: const InputDecoration(hintText: "Category"),
+                  ),
+                  const SizedBox(height: 12),
+                  ImagePickerField(
+                    initialImages: editImages,
+                    onImagesSelected: (images) {
+                      setModalState(() {
+                        editImages.clear();
+                        editImages.addAll(images);
+                      });
+                    },
+                    maxImages: 5,
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: variantsController,
+                    maxLines: 3,
+                    decoration: const InputDecoration(
+                      labelText: "Variantlar (ixtiyoriy)",
+                      hintText:
+                          "Kichik:50000, O'rta:75000, Katta:100000\nQizil:85000, Ko'k:85000",
+                      helperText: "Format: nom:narx, vergul bilan ajratilgan",
+                      helperMaxLines: 2,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      Text("Edit product",
-                          style: Theme.of(context).textTheme.titleLarge),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: nameController,
-                        decoration:
-                            const InputDecoration(hintText: "Product name"),
+                      TextButton(
+                        onPressed: () => Navigator.pop(context),
+                        child: const Text("Cancel"),
                       ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: descriptionController,
-                        decoration:
-                            const InputDecoration(hintText: "Description"),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: priceController,
-                        keyboardType: TextInputType.number,
-                        decoration: const InputDecoration(hintText: "Price"),
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: ratingController,
-                        keyboardType: TextInputType.number,
-                        decoration:
-                            const InputDecoration(hintText: "Rating (0-5)"),
-                      ),
-                      const SizedBox(height: 12),
-                      DropdownButtonFormField<Category>(
-                        value: selectedCategory,
-                        items: items
-                            .map(
-                              (category) => DropdownMenuItem(
-                                value: category,
-                                child: Text(category.name),
-                              ),
-                            )
-                            .toList(),
-                        onChanged: (value) =>
-                            setModalState(() => selectedCategory = value),
-                        decoration: const InputDecoration(hintText: "Category"),
-                      ),
-                      const SizedBox(height: 12),
-                      ImagePickerField(
-                        initialImages: editImages,
-                        onImagesSelected: (images) {
-                          setModalState(() {
-                            editImages.clear();
-                            editImages.addAll(images);
-                          });
-                        },
-                        maxImages: 5,
-                      ),
-                      const SizedBox(height: 12),
-                      TextField(
-                        controller: variantsController,
-                        maxLines: 3,
-                        decoration: const InputDecoration(
-                          labelText: "Variantlar (ixtiyoriy)",
-                          hintText:
-                              "Kichik:50000, O'rta:75000, Katta:100000\nQizil:85000, Ko'k:85000",
-                          helperText:
-                              "Format: nom:narx, vergul bilan ajratilgan",
-                          helperMaxLines: 2,
+                      const SizedBox(width: 8),
+                      FilledButton(
+                        onPressed: () => _submitEdit(
+                          context,
+                          product.id,
+                          nameController.text.trim(),
+                          descriptionController.text.trim(),
+                          priceController.text.trim(),
+                          ratingController.text.trim(),
+                          selectedCategory,
+                          editImages,
+                          variantsController.text,
                         ),
+                        child: const Text("Save"),
                       ),
-                      const SizedBox(height: 16),
-                      Row(
-                        mainAxisAlignment: MainAxisAlignment.end,
-                        children: [
-                          TextButton(
-                            onPressed: () => Navigator.pop(context),
-                            child: const Text("Cancel"),
-                          ),
-                          const SizedBox(width: 8),
-                          FilledButton(
-                            onPressed: () => _submitEdit(
-                              context,
-                              product.id,
-                              nameController.text.trim(),
-                              descriptionController.text.trim(),
-                              priceController.text.trim(),
-                              ratingController.text.trim(),
-                              selectedCategory,
-                              editImages,
-                              variantsController.text,
-                            ),
-                            child: const Text("Save"),
-                          ),
-                        ],
-                      ),
-                      const SizedBox(height: 16),
                     ],
-                  );
-                },
+                  ),
+                  const SizedBox(height: 16),
+                ],
               );
             },
           ),
@@ -496,5 +488,37 @@ class _AdminProductScreenState extends State<AdminProductScreen> {
     return variants
         .map((variant) => "${variant.name}:${variant.price}")
         .join(", ");
+  }
+
+  Future<void> _showDeleteConfirmation(
+      BuildContext context, Product product) async {
+    final result = await showDialog<bool>(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Mahsulotni o'chirish"),
+        content: Text(
+          "'${product.name}' mahsulotini o'chirmoqchimisiz?\n\n"
+          "Diqqat: Agar bu mahsulot buyurtmalarda ishlatilgan bo'lsa, "
+          "o'chirish mumkin bo'lmasligi mumkin.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context, false),
+            child: const Text("Bekor qilish"),
+          ),
+          FilledButton(
+            onPressed: () => Navigator.pop(context, true),
+            style: FilledButton.styleFrom(
+              backgroundColor: Colors.red,
+            ),
+            child: const Text("O'chirish"),
+          ),
+        ],
+      ),
+    );
+
+    if (result == true && context.mounted) {
+      _productBloc.add(DeleteAdminProduct(productId: product.id));
+    }
   }
 }

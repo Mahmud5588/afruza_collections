@@ -52,6 +52,24 @@ class CategoryRepositoryMock implements CategoryRepository {
   }
 
   @override
+  Future<void> createCategoryWithIcon(
+      {required String name, String? iconPath}) async {
+    if (!AppConfig.useMockData) {
+      throw Exception("Mock mode o'chirilgan!");
+    }
+
+    // Mock delay
+    await Future.delayed(const Duration(milliseconds: 300));
+
+    final newId = _categories.isEmpty
+        ? 1
+        : _categories.map((c) => c.id).reduce((a, b) => a > b ? a : b) + 1;
+
+    // In mock mode, we just use a placeholder icon URL
+    _categories.add(Category(id: newId, name: name, icon: "icon_$newId"));
+  }
+
+  @override
   Future<void> updateCategory(
       {required int categoryId, required String name, String? iconUrl}) async {
     if (!AppConfig.useMockData) {

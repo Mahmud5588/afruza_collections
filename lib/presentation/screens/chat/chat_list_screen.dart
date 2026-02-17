@@ -46,29 +46,30 @@ class _ChatListScreenState extends State<ChatListScreen> {
       ));
     }
 
-    // Mock: Agar xonalar bo'lmasa, test uchun qo'shamiz
+    // Mock: Agar xonalar bo'lmasa, test uchun qo'shamiz (faqat development uchun)
     if (rooms.isEmpty) {
+      // Demo user chats
       rooms.addAll([
         _ChatRoom(
-          userId: "user_1",
+          userId: "demo_user_1",
           userName: "Alisher Usmonov",
           lastMessage: "Assalomu alaykum, buyurtmam qachon yetib keladi?",
           lastMessageTime: DateTime.now().subtract(const Duration(minutes: 5)),
-          unreadCount: 2,
+          unreadCount: 0, // Backend'dan kelganidan keyin to'g'ri count bo'ladi
         ),
         _ChatRoom(
-          userId: "user_2",
+          userId: "demo_user_2",
           userName: "Dilnoza Karimova",
           lastMessage: "Mahsulot juda yoqdi, rahmat!",
           lastMessageTime: DateTime.now().subtract(const Duration(hours: 1)),
           unreadCount: 0,
         ),
         _ChatRoom(
-          userId: "user_3",
+          userId: "demo_user_3",
           userName: "Bobur Ergashev",
           lastMessage: "Yana ranglari bormi?",
           lastMessageTime: DateTime.now().subtract(const Duration(hours: 3)),
-          unreadCount: 1,
+          unreadCount: 0,
         ),
       ]);
     }
@@ -152,8 +153,8 @@ class _ChatListScreenState extends State<ChatListScreen> {
     );
   }
 
-  void _openChat(_ChatRoom room) {
-    Navigator.push(
+  void _openChat(_ChatRoom room) async {
+    await Navigator.push(
       context,
       MaterialPageRoute(
         builder: (context) => ChatScreen(
@@ -161,7 +162,9 @@ class _ChatListScreenState extends State<ChatListScreen> {
           userName: room.userName,
         ),
       ),
-    ).then((_) => _loadRooms());
+    );
+    // Reload rooms to update unread counts
+    _loadRooms();
   }
 }
 

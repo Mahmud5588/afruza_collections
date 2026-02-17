@@ -1,5 +1,6 @@
 import "package:flutter/material.dart";
 import "package:flutter_bloc/flutter_bloc.dart";
+import "package:intl/intl.dart";
 
 import "../../../core/di.dart";
 import "../../../core/localization/app_localizations.dart";
@@ -50,6 +51,139 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
     _orderBloc.add(const LoadOrders());
   }
 
+  String _getStatusText(String status) {
+    switch (status.toLowerCase()) {
+      case "pending":
+        return "Kutilmoqda";
+      case "processing":
+        return "Jarayonda";
+      case "shipped":
+        return "Yo'lda";
+      case "delivered":
+        return "Yetkazildi";
+      case "completed":
+        return "Bajarildi";
+      case "cancelled":
+        return "Bekor qilindi";
+      default:
+        return status;
+    }
+  }
+
+  void _showOrderDetails(BuildContext context, dynamic order) {
+    final formatter = NumberFormat.currency(symbol: "UZS ", decimalDigits: 0);
+    final canCancel = order.status.toLowerCase() == "pending" ||
+        order.status.toLowerCase() == "processing";
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      builder: (context) {
+        return Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                "Buyurtma #${order.id}",
+                style: Theme.of(context).textTheme.titleLarge,
+              ),
+              const SizedBox(height: 16),
+              _DetailRow(
+                label: "Holat",
+                value: _getStatusText(order.status),
+              ),
+              _DetailRow(
+                label: "Sana",
+                value: DateFormat("dd MMM yyyy, HH:mm").format(order.createdAt),
+              ),
+              _DetailRow(
+                label: "Summa",
+                value: formatter.format(order.total),
+              ),
+              const SizedBox(height: 16),
+              Text(
+                "Mahsulotlar",
+                style: Theme.of(context).textTheme.titleMedium,
+              ),
+              const SizedBox(height: 8),
+              ...order.items.map((item) => Padding(
+                    padding: const EdgeInsets.symmetric(vertical: 4),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      children: [
+                        Expanded(
+                          child: Text(
+                            "${item.productName} x${item.quantity}",
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        Text(formatter.format(item.unitPrice * item.quantity)),
+                      ],
+                    ),
+                  )),
+              const SizedBox(height: 24),
+              Row(
+                children: [
+                  Expanded(
+                    child: OutlinedButton(
+                      onPressed: () => Navigator.pop(context),
+                      child: const Text("Yopish"),
+                    ),
+                  ),
+                  if (canCancel) ...[
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: FilledButton(
+                        onPressed: () {
+                          Navigator.pop(context);
+                          _showCancelWarning(context);
+                        },
+                        style: FilledButton.styleFrom(
+                          backgroundColor: Colors.red,
+                        ),
+                        child: const Text("Bekor qilish"),
+                      ),
+                    ),
+                  ],
+                ],
+              ),
+              const SizedBox(height: 16),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  void _showCancelWarning(BuildContext context) {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: const Text("Buyurtmani bekor qilish"),
+        content: const Text(
+          "Agar buyurtmani bekor qilmoqchi bo'lsangiz, "
+          "iltimos Admin bilan bog'lanib, chat orqali bekor qilishni so'rang.",
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(context),
+            child: const Text("Tushunarli"),
+          ),
+          FilledButton(
+            onPressed: () {
+              Navigator.pop(context);
+              Navigator.pushNamed(context, "/chat");
+            },
+            child: const Text("Chat ga o'tish"),
+          ),
+        ],
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     final t = AppLocalizations.of(context).t;
@@ -60,8 +194,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
           decoration: const BoxDecoration(gradient: AppGradients.hero),
           child: SafeArea(
             child: FutureBuilder<bool>(
-              future: sl<StorageService>()
-                  .isTokenValid(const Duration(days: 30)),
+              future:
+                  sl<StorageService>().isTokenValid(const Duration(days: 30)),
               builder: (context, snapshot) {
                 if (snapshot.connectionState == ConnectionState.waiting) {
                   return const Center(child: CircularProgressIndicator());
@@ -86,7 +220,8 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                           ),
                           const SizedBox(height: 20),
                           FilledButton(
-                            onPressed: () => Navigator.pushNamed(context, "/login"),
+                            onPressed: () =>
+                                Navigator.pushNamed(context, "/login"),
                             child: Text(t("sign_in")),
                           ),
                         ],
@@ -142,11 +277,15 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
                                 .map(
                                   (order) => Padding(
                                     padding: const EdgeInsets.only(bottom: 16),
-                                    child: OrderCard(
-                                      title: "Order #${order.id}",
-                                      status: order.status,
-                                      date: order.createdAt,
-                                      total: order.total,
+                                    child: GestureDetector(
+                                      onTap: () =>
+                                          _showOrderDetails(context, order),
+                                      child: OrderCard(
+                                        title: "Order #${order.id}",
+                                        status: _getStatusText(order.status),
+                                        date: order.createdAt,
+                                        total: order.total,
+                                      ),
                                     ),
                                   ),
                                 )
@@ -172,6 +311,30 @@ class _OrderHistoryScreenState extends State<OrderHistoryScreen> {
             ),
           ),
         ),
+      ),
+    );
+  }
+}
+
+class _DetailRow extends StatelessWidget {
+  const _DetailRow({required this.label, required this.value});
+
+  final String label;
+  final String value;
+
+  @override
+  Widget build(BuildContext context) {
+    return Padding(
+      padding: const EdgeInsets.symmetric(vertical: 4),
+      child: Row(
+        mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        children: [
+          Text(label, style: Theme.of(context).textTheme.bodyMedium),
+          Text(
+            value,
+            style: Theme.of(context).textTheme.titleSmall,
+          ),
+        ],
       ),
     );
   }

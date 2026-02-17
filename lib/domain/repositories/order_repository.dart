@@ -12,4 +12,6 @@ abstract class OrderRepository {
     double? deliveryLng,
     String? deliveryNote,
   });
+  Future<void> updateOrderStatus(
+      {required int orderId, required String status});
 }

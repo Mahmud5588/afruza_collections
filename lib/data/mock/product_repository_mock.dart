@@ -150,6 +150,48 @@ class ProductRepositoryMock implements ProductRepository {
   }
 
   @override
+  Future<void> createProductWithImage({
+    required String name,
+    required String description,
+    required double price,
+    required int categoryId,
+    required String imagePath,
+    double rating = 0,
+    List<Map<String, dynamic>>? variants,
+  }) async {
+    if (!AppConfig.useMockData) {
+      throw Exception("Mock mode o'chirilgan!");
+    }
+
+    // Mock delay
+    await Future.delayed(const Duration(milliseconds: 400));
+
+    final newId = _products.isEmpty
+        ? 1
+        : _products.map((p) => p.id).reduce((a, b) => a > b ? a : b) + 1;
+
+    final variantList = (variants ?? []).map((v) {
+      return ProductVariant(
+        id: v["id"] as int? ?? 0,
+        name: v["name"] as String? ?? "",
+        price: (v["price"] as num?)?.toDouble() ?? price,
+      );
+    }).toList();
+
+    // In mock mode, we just use a placeholder image URL
+    _products.add(Product(
+      id: newId,
+      name: name,
+      description: description,
+      price: price,
+      rating: rating,
+      categoryName: "Test Category", // Mock uchun
+      imageUrls: ["image_$newId"],
+      variants: variantList,
+    ));
+  }
+
+  @override
   Future<void> deleteProduct({required int productId}) async {
     if (!AppConfig.useMockData) {
       throw Exception("Mock mode o'chirilgan!");

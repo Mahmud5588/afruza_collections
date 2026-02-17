@@ -17,6 +17,7 @@ class LoginScreen extends StatefulWidget {
 class _LoginScreenState extends State<LoginScreen> {
   final _emailController = TextEditingController();
   final _passwordController = TextEditingController();
+  bool _obscurePassword = true;
 
   @override
   void dispose() {
@@ -105,15 +106,34 @@ class _LoginScreenState extends State<LoginScreen> {
                             children: [
                               TextField(
                                 controller: _emailController,
+                                keyboardType: TextInputType.emailAddress,
+                                textInputAction: TextInputAction.next,
+                                autofillHints: const [AutofillHints.email],
                                 decoration:
                                     InputDecoration(hintText: t("email")),
                               ),
                               const SizedBox(height: 16),
                               TextField(
                                 controller: _passwordController,
-                                obscureText: true,
-                                decoration:
-                                    InputDecoration(hintText: t("password")),
+                                obscureText: _obscurePassword,
+                                keyboardType: TextInputType.visiblePassword,
+                                textInputAction: TextInputAction.done,
+                                autofillHints: const [AutofillHints.password],
+                                decoration: InputDecoration(
+                                  hintText: t("password"),
+                                  suffixIcon: IconButton(
+                                    icon: Icon(
+                                      _obscurePassword
+                                          ? Icons.visibility_outlined
+                                          : Icons.visibility_off_outlined,
+                                    ),
+                                    onPressed: () {
+                                      setState(() {
+                                        _obscurePassword = !_obscurePassword;
+                                      });
+                                    },
+                                  ),
+                                ),
                               ),
                               const SizedBox(height: 20),
                               BlocBuilder<AuthBloc, AuthState>(

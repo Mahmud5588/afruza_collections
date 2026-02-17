@@ -11,10 +11,32 @@ class CommentRepositoryImpl implements CommentRepository {
   final Dio dio;
 
   @override
-  Future<List<Comment>> fetchComments({required int productId}) async {
+  Future<List<Comment>> fetchComments({
+    required int productId,
+    int? skip,
+    int? limit,
+  }) async {
     try {
-      final response = await dio.get("/products/$productId/comments");
-      final data = response.data as List<dynamic>;
+      final response = await dio.get(
+        "/products/$productId/comments",
+        queryParameters: {
+          if (skip != null) "skip": skip,
+          if (limit != null) "limit": limit,
+        },
+      );
+      // Backend paginatedresponse qaytarmoqda
+      final payload = response.data;
+      final List<dynamic> data;
+
+      // Check if response is paginated or direct list
+      if (payload is Map<String, dynamic> && payload.containsKey('items')) {
+        data = payload["items"] as List<dynamic>? ?? [];
+      } else if (payload is List) {
+        data = payload;
+      } else {
+        data = [];
+      }
+
       return data
           .whereType<Map<String, dynamic>>()
           .map(CommentModel.fromJson)
@@ -29,14 +51,12 @@ class CommentRepositoryImpl implements CommentRepository {
   Future<void> createComment({
     required int productId,
     required String text,
-    required double rating,
   }) async {
     try {
       await dio.post(
         "/products/$productId/comments",
         data: {
           "text": text,
-          "rating": rating,
         },
       );
     } on DioException catch (error) {
@@ -45,9 +65,12 @@ class CommentRepositoryImpl implements CommentRepository {
   }
 
   @override
-  Future<void> deleteComment({required int commentId}) async {
+  Future<void> deleteComment({
+    required int productId,
+    required int commentId,
+  }) async {
     try {
-      await dio.delete("/comments/$commentId");
+      await dio.delete("/products/$productId/comments/$commentId");
     } on DioException catch (error) {
       throw mapDioError(error);
     }

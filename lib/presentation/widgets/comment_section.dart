@@ -1,6 +1,8 @@
 import "package:flutter/material.dart";
 
 import "../../../domain/entities/comment.dart";
+import "../../../core/di.dart";
+import "../../../data/local/storage_service.dart";
 
 /// Comment section with "Coming Soon" state
 class CommentSection extends StatefulWidget {
@@ -271,66 +273,61 @@ class _CommentCard extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return Card(
-      margin: const EdgeInsets.only(bottom: 12),
-      child: Padding(
-        padding: const EdgeInsets.all(16),
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            Row(
+    return FutureBuilder<bool>(
+      future: sl<StorageService>().readIsAdmin(),
+      builder: (context, snapshot) {
+        final isAdmin = snapshot.data ?? false;
+
+        return Card(
+          margin: const EdgeInsets.only(bottom: 12),
+          child: Padding(
+            padding: const EdgeInsets.all(16),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                CircleAvatar(
-                  radius: 20,
-                  backgroundColor:
-                      Theme.of(context).colorScheme.primaryContainer,
-                  child: Text(
-                    comment.userEmail[0].toUpperCase(),
-                    style: Theme.of(context).textTheme.titleMedium,
-                  ),
-                ),
-                const SizedBox(width: 12),
-                Expanded(
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        comment.userEmail,
-                        style: Theme.of(context).textTheme.titleSmall,
+                Row(
+                  children: [
+                    CircleAvatar(
+                      radius: 20,
+                      backgroundColor:
+                          Theme.of(context).colorScheme.primaryContainer,
+                      child: Icon(
+                        Icons.person,
+                        color: Theme.of(context).colorScheme.onPrimaryContainer,
                       ),
-                      Row(
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Icon(
-                            Icons.star,
-                            size: 14,
-                            color: Theme.of(context).colorScheme.secondary,
-                          ),
-                          const SizedBox(width: 4),
                           Text(
-                            comment.rating.toStringAsFixed(1),
-                            style: Theme.of(context).textTheme.bodySmall,
+                            isAdmin
+                                ? "User #${comment.userId}"
+                                : "Foydalanuvchi",
+                            style: Theme.of(context).textTheme.titleSmall,
                           ),
                         ],
                       ),
-                    ],
-                  ),
+                    ),
+                    Text(
+                      _formatDate(comment.createdAt),
+                      style: Theme.of(context).textTheme.bodySmall?.copyWith(
+                            color: Theme.of(context)
+                                .colorScheme
+                                .onSurface
+                                .withOpacity(0.6),
+                          ),
+                    ),
+                  ],
                 ),
-                Text(
-                  _formatDate(comment.createdAt),
-                  style: Theme.of(context).textTheme.bodySmall?.copyWith(
-                        color: Theme.of(context)
-                            .colorScheme
-                            .onSurface
-                            .withOpacity(0.6),
-                      ),
-                ),
+                const SizedBox(height: 12),
+                Text(comment.text),
               ],
             ),
-            const SizedBox(height: 12),
-            Text(comment.text),
-          ],
-        ),
-      ),
+          ),
+        );
+      },
     );
   }
 

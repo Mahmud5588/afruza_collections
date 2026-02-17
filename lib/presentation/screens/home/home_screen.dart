@@ -4,7 +4,6 @@ import "package:flutter_bloc/flutter_bloc.dart";
 import "../../../core/di.dart";
 import "../../../core/localization/app_localizations.dart";
 import "../../../core/ui_constants.dart";
-import "../../../core/category_icons.dart";
 import "../../../core/mock_mode_indicator.dart";
 import "../../../domain/entities/product.dart";
 import "../../blocs/category/category_bloc.dart";
@@ -15,6 +14,7 @@ import "../../widgets/empty_state.dart";
 import "../../widgets/product_card.dart";
 import "../../widgets/section_header.dart";
 import "../../widgets/skeleton_box.dart";
+import "../../widgets/category_icon.dart";
 
 class HomeScreen extends StatefulWidget {
   const HomeScreen({super.key});
@@ -181,14 +181,14 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 8),
                               ...categories.map(
                                 (category) {
-                                  final icon = category.icon != null
-                                      ? CategoryIcons.getIcon(category.icon)
-                                      : CategoryIcons.getDefaultIcon(
-                                          category.name);
                                   return Padding(
                                     padding: const EdgeInsets.only(right: 8),
                                     child: FilterChip(
-                                      avatar: Icon(icon, size: 18),
+                                      avatar: CategoryIconWidget(
+                                        icon: category.icon,
+                                        size: 18,
+                                        fallbackName: category.name,
+                                      ),
                                       label: Text(category.name),
                                       selected:
                                           _selectedCategoryId == category.id,

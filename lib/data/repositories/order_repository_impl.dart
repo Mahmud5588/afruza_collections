@@ -48,6 +48,19 @@ class OrderRepositoryImpl implements OrderRepository {
   }
 
   @override
+  Future<void> updateOrderStatus(
+      {required int orderId, required String status}) async {
+    try {
+      AppLogger.info("Updating order $orderId status to: $status");
+      await dio.patch("/orders/$orderId/status", data: {"status": status});
+      AppLogger.success("Order status updated successfully");
+    } on DioException catch (error) {
+      AppLogger.error("Order status update failed", error: error);
+      throw mapDioError(error);
+    }
+  }
+
+  @override
   Future<PagedResult<Order>> fetchOrders({int? skip, int? limit}) async {
     try {
       final response = await dio.get(

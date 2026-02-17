@@ -1,3 +1,5 @@
+import "dart:io";
+
 import "package:dio/dio.dart";
 
 import "../../domain/entities/category.dart";
@@ -48,6 +50,28 @@ class CategoryRepositoryImpl implements CategoryRepository {
         data["icon_url"] = iconUrl;
       }
       await dio.post("/categories", data: data);
+    } on DioException catch (error) {
+      throw mapDioError(error);
+    }
+  }
+
+  @override
+  Future<void> createCategoryWithIcon(
+      {required String name, String? iconPath}) async {
+    try {
+      final formData = FormData();
+      formData.fields.add(MapEntry("name", name));
+
+      if (iconPath != null && File(iconPath).existsSync()) {
+        formData.files.add(
+          MapEntry(
+            "icon",
+            await MultipartFile.fromFile(iconPath),
+          ),
+        );
+      }
+
+      await dio.post("/categories/with-icon", data: formData);
     } on DioException catch (error) {
       throw mapDioError(error);
     }

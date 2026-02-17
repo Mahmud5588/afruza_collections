@@ -39,6 +39,13 @@ class _ChatScreenState extends State<ChatScreen> {
     _clientId = DateTime.now().millisecondsSinceEpoch.toString();
     _loadHistory();
     _connect();
+    _markAsRead();
+  }
+
+  Future<void> _markAsRead() async {
+    final storage = sl<ChatStorage>();
+    final roomId = widget.userId ?? "admin";
+    await storage.markAsRead(roomId);
   }
 
   @override
@@ -51,27 +58,44 @@ class _ChatScreenState extends State<ChatScreen> {
   }
 
   void _connect() {
-    // Convert HTTP(S) to WS(S) properly
-    final wsBase = AppConfig.apiBaseUrl
-        .replaceFirst("https://", "wss://")
-        .replaceFirst("http://", "ws://");
-    final roomId = widget.userId ?? "admin";
-    final uri = Uri.parse("$wsBase/ws/chat/$roomId?client_id=$_clientId");
-    _channel = WebSocketChannel.connect(uri);
-    _subscription = _channel.stream.listen(
-      (event) {
-        _handleIncoming(event);
-      },
-      onError: (_) {
-        _showMessage(_t("chat_failed"));
-      },
-      onDone: () {
-        if (mounted) {
-          setState(() => _connected = false);
-        }
-      },
-    );
-    setState(() => _connected = true);
+    try {
+      // Convert HTTP(S) to WS(S) properly
+      final wsBase = AppConfig.apiBaseUrl
+          .replaceFirst("https://", "wss://")
+          .replaceFirst("http://", "ws://");
+      final roomId = widget.userId ?? "admin";
+
+      // Properly construct WebSocket URL without port issues
+      final wsUrl = "$wsBase/ws/chat/$roomId?client_id=$_clientId";
+
+      // Parse URI carefully to avoid port issues
+      final uri = Uri.parse(wsUrl);
+
+      _channel = WebSocketChannel.connect(uri);
+      _subscription = _channel.stream.listen(
+        (event) {
+          _handleIncoming(event);
+        },
+        onError: (error) {
+          if (mounted) {
+            setState(() => _connected = false);
+          }
+          // Optional: show error to user
+          // _showMessage(_t("chat_failed"));
+        },
+        onDone: () {
+          if (mounted) {
+            setState(() => _connected = false);
+          }
+        },
+      );
+      setState(() => _connected = true);
+    } catch (e) {
+      // WebSocket connection xatosi - foydalanuvchiga xabar bermaslik
+      if (mounted) {
+        setState(() => _connected = false);
+      }
+    }
   }
 
   Future<void> _loadHistory() async {
@@ -117,6 +141,8 @@ class _ChatScreenState extends State<ChatScreen> {
           mediaType: mediaType,
         ),
       );
+      // Don't increment unread count when chat is open
+      // User is already viewing the message
     } catch (_) {
       _addMessage(_ChatMessage(
         id: DateTime.now().microsecondsSinceEpoch.toString(),

@@ -80,7 +80,11 @@ class AuthRepositoryImpl implements AuthRepository {
   }
 
   Future<void> _storeSession(Map<String, dynamic> data) async {
+    AppLogger.debug("Storing session. Response data: $data");
+
     final token = AuthTokenModel.fromJson(data);
+    AppLogger.debug(
+        "Parsed token - access_token length: ${token.accessToken.length}, has refresh: ${token.refreshToken != null}");
 
     // Validate token format before storing
     if (!TokenSecurity.isValidTokenFormat(token.accessToken)) {
@@ -94,16 +98,36 @@ class AuthRepositoryImpl implements AuthRepository {
       throw Exception("Invalid refresh token format");
     }
 
+    // Save tokens
     await storage.saveToken(token.accessToken);
+    AppLogger.debug("✅ Access token saved to secure storage");
+
     if (token.refreshToken != null) {
       await storage.saveRefreshToken(token.refreshToken!);
+      AppLogger.debug("✅ Refresh token saved to secure storage");
     }
 
+    // Verify token was saved
+    final savedToken = await storage.readToken();
+    if (savedToken == null || savedToken.isEmpty) {
+      AppLogger.error("❌ Token was not saved correctly!");
+      throw Exception("Failed to save token");
+    }
+    AppLogger.debug(
+        "✅ Token verified in storage (length: ${savedToken.length})");
+
     AppLogger.debug("Fetching user profile...");
-    final me = await dio.get("/users/me");
-    final payload = me.data as Map<String, dynamic>;
-    final isAdmin = payload["is_admin"] as bool? ?? false;
-    await storage.saveIsAdmin(isAdmin);
-    AppLogger.debug("Session stored. isAdmin: $isAdmin");
+    try {
+      final me = await dio.get("/users/me");
+      final payload = me.data as Map<String, dynamic>;
+      final isAdmin = payload["is_admin"] as bool? ?? false;
+      await storage.saveIsAdmin(isAdmin);
+      AppLogger.success("✅ Session stored successfully. isAdmin: $isAdmin");
+    } catch (e) {
+      AppLogger.error("❌ Failed to fetch user profile after login", error: e);
+      // Clear tokens if profile fetch fails
+      await storage.clearToken();
+      rethrow;
+    }
   }
 }

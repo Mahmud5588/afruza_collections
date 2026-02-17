@@ -30,6 +30,12 @@
 -dontwarn org.conscrypt.**
 -dontwarn org.bouncycastle.**
 
+# Handle Play Core library for SDK 35 compatibility
+# These classes are needed by Flutter embedding but not used if deferred components aren't enabled
+-dontwarn com.google.android.play.core.**
+-keep class com.google.android.play.core.** { *; }
+-keep interface com.google.android.play.core.** { *; }
+
 # Optimize and obfuscate
 -optimizations !code/simplification/arithmetic,!field/*,!class/merging/*
 -dontusemixedcaseclassnames

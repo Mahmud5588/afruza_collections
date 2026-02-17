@@ -1,8 +1,6 @@
 import "package:flutter/material.dart";
-import "package:image_picker/image_picker.dart";
-import "package:dio/dio.dart";
 import "dart:io";
-import "../../core/di.dart";
+import "package:image_picker/image_picker.dart";
 
 class ImagePickerField extends StatefulWidget {
   const ImagePickerField({
@@ -98,75 +96,44 @@ class _ImagePickerFieldState extends State<ImagePickerField> {
     if (_selectedImages.length >= widget.maxImages) {
       if (!mounted) return;
       ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(content: Text("Maximum ${widget.maxImages} images allowed")),
+        SnackBar(
+            content:
+                Text("Maksimal ${widget.maxImages} ta rasm qo'shish mumkin")),
       );
       return;
     }
 
-    final picker = ImagePicker();
-    final pickedFile = await picker.pickImage(source: ImageSource.gallery);
-
-    if (pickedFile != null) {
-      // Show loading
-      if (!mounted) return;
-      setState(() {
-        _isUploading = true;
-      });
-
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text("Rasm yuklanmoqda..."),
-          duration: Duration(seconds: 30),
-        ),
+    try {
+      final picker = ImagePicker();
+      final pickedFile = await picker.pickImage(
+        source: ImageSource.gallery,
+        maxWidth: 1920,
+        maxHeight: 1920,
+        imageQuality: 85,
       );
 
-      try {
-        // Upload to backend
-        final dio = sl<Dio>();
-        final formData = FormData.fromMap({
-          'file': await MultipartFile.fromFile(
-            pickedFile.path,
-            filename: pickedFile.name,
-          ),
-        });
-
-        final response = await dio.post('/upload/image', data: formData);
-
-        if (response.statusCode == 200) {
-          final imageUrl = response.data['url'] as String;
-
-          if (!mounted) return;
-          setState(() {
-            _selectedImages.add(imageUrl);
-            _isUploading = false;
-          });
-          widget.onImagesSelected(_selectedImages);
-
-          ScaffoldMessenger.of(context).clearSnackBars();
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Text("Rasm yuklandi: ${pickedFile.name}"),
-              backgroundColor: Colors.green,
-              duration: const Duration(seconds: 2),
-            ),
-          );
-        }
-      } catch (e) {
-        if (!mounted) return;
+      if (pickedFile != null && mounted) {
         setState(() {
-          _isUploading = false;
+          _selectedImages.add(pickedFile.path);
         });
+        widget.onImagesSelected(_selectedImages);
 
-        ScaffoldMessenger.of(context).clearSnackBars();
         ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                "Xatolik: Rasmni yuklashda xatolik yuz berdi. Backend'da /upload/image endpoint yo'qmi?"),
-            backgroundColor: Colors.red,
-            duration: const Duration(seconds: 5),
+          const SnackBar(
+            content: Text("Rasm qo'shildi"),
+            backgroundColor: Colors.green,
+            duration: Duration(seconds: 2),
           ),
         );
       }
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text("Xatolik: $e"),
+          backgroundColor: Colors.red,
+        ),
+      );
     }
   }
 

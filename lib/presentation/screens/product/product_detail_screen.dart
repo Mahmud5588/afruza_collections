@@ -11,6 +11,7 @@ import "../../../data/local/storage_service.dart";
 import "../../../domain/entities/product.dart";
 import "../../../domain/entities/comment.dart";
 import "../../../domain/repositories/comment_repository.dart";
+import "../../../domain/repositories/rating_repository.dart";
 import "../../../domain/usecases/create_order.dart";
 import "../../widgets/favorite_button.dart";
 import "../../widgets/comment_section.dart";
@@ -318,17 +319,90 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
                             isFeatureAvailable: _isCommentsAvailable,
                             comments: _comments,
                             onAddComment: (text, rating) async {
-                              await sl<CommentRepository>().createComment(
-                                productId: product.id,
-                                text: text,
-                                rating: rating,
-                              );
-                              // Reload comments
-                              final updatedComments =
-                                  await sl<CommentRepository>()
-                                      .fetchComments(productId: product.id);
-                              if (mounted) {
-                                setState(() => _comments = updatedComments);
+                              // Check if user is logged in
+                              final storage = sl<StorageService>();
+                              final isLoggedIn = await storage
+                                  .isTokenValid(const Duration(days: 30));
+                              if (!isLoggedIn) {
+                                if (!mounted) return;
+                                // Show login prompt
+                                final shouldLogin = await showDialog<bool>(
+                                  context: context,
+                                  builder: (context) => AlertDialog(
+                                    title: const Text("Tizimga kirish kerak"),
+                                    content: const Text(
+                                        "Izoh va reyting qo'shish uchun tizimga kirishingiz kerak."),
+                                    actions: [
+                                      TextButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, false),
+                                        child: const Text("Bekor qilish"),
+                                      ),
+                                      FilledButton(
+                                        onPressed: () =>
+                                            Navigator.pop(context, true),
+                                        child: const Text("Tizimga kirish"),
+                                      ),
+                                    ],
+                                  ),
+                                );
+                                if (shouldLogin == true && mounted) {
+                                  Navigator.pushNamed(context, "/login");
+                                }
+                                return;
+                              }
+
+                              try {
+                                await sl<CommentRepository>().createComment(
+                                  productId: product.id,
+                                  text: text,
+                                );
+                                // Separate: Upsert rating
+                                if (rating > 0) {
+                                  await sl<RatingRepository>().upsertRating(
+                                    productId: product.id,
+                                    rating: rating.toInt(),
+                                  );
+                                }
+                                // Reload comments
+                                final updatedComments =
+                                    await sl<CommentRepository>()
+                                        .fetchComments(productId: product.id);
+                                if (mounted) {
+                                  setState(() => _comments = updatedComments);
+                                }
+                              } on ApiException catch (e) {
+                                if (e.statusCode == 401) {
+                                  // Token expired or invalid
+                                  if (!mounted) return;
+                                  await storage.clearToken();
+                                  if (!mounted) return;
+                                  final shouldLogin = await showDialog<bool>(
+                                    context: context,
+                                    builder: (context) => AlertDialog(
+                                      title: const Text("Sessiya tugadi"),
+                                      content: const Text(
+                                          "Iltimos, qaytadan tizimga kiring."),
+                                      actions: [
+                                        TextButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, false),
+                                          child: const Text("Bekor qilish"),
+                                        ),
+                                        FilledButton(
+                                          onPressed: () =>
+                                              Navigator.pop(context, true),
+                                          child: const Text("Tizimga kirish"),
+                                        ),
+                                      ],
+                                    ),
+                                  );
+                                  if (shouldLogin == true && mounted) {
+                                    Navigator.pushNamed(context, "/login");
+                                  }
+                                } else {
+                                  rethrow;
+                                }
                               }
                             },
                           ),
@@ -353,6 +427,18 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
       Navigator.pushNamed(context, "/login");
       return;
     }
+
+    // Get delivery address from user
+    final addressData = await Navigator.pushNamed(
+      context,
+      "/address_picker",
+    ) as Map<String, dynamic>?;
+
+    if (addressData == null) {
+      // User cancelled address selection
+      return;
+    }
+
     final shouldContinue = await _confirmDelivery(context);
     if (!shouldContinue) {
       return;
@@ -363,6 +449,10 @@ class _ProductDetailScreenState extends State<ProductDetailScreen> {
         productId: product.id,
         variantId: _selectedVariant?.id,
         quantity: quantity,
+        deliveryAddress: addressData["address"] as String,
+        deliveryLat: addressData["lat"] as double?,
+        deliveryLng: addressData["lng"] as double?,
+        deliveryNote: addressData["note"] as String?,
       );
       if (!mounted) return;
       await _showOrderSuccess(context);

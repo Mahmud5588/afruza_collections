@@ -1,6 +1,7 @@
 import "package:flutter/material.dart";
 
 import "../../../core/di.dart";
+import "../../../core/logger.dart";
 import "../../../core/localization/app_localizations.dart";
 import "../../../core/ui_constants.dart";
 import "../../../data/local/storage_service.dart";
@@ -84,14 +85,26 @@ class AdminGate extends StatelessWidget {
 
   Future<Map<String, dynamic>> _checkAdminAccess() async {
     final storage = sl<StorageService>();
-    final isAdmin = await storage.readIsAdmin();
+
+    // First check if token exists
     final token = await storage.readToken();
     final hasToken = token != null && token.isNotEmpty;
 
-    // Agar token yo'q bo'lsa, isAdmin flagini tozalash
-    if (!hasToken && isAdmin) {
+    AppLogger.debug(
+        "Admin Gate Check - Has token: $hasToken (length: ${token?.length ?? 0})");
+
+    if (!hasToken) {
+      AppLogger.warning("No token found, clearing admin flag");
       await storage.clearToken();
+      return {
+        'isAdmin': false,
+        'hasToken': false,
+      };
     }
+
+    // Check admin flag
+    final isAdmin = await storage.readIsAdmin();
+    AppLogger.debug("Admin Gate Check - isAdmin: $isAdmin");
 
     return {
       'isAdmin': isAdmin,
